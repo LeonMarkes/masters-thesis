@@ -17,26 +17,42 @@ import numpy as np
 #
 
 # blur = np.ones((3, 3))
-def check_highest_value(values: Tuple[float]) -> float:
-    return max(values)
+def provjeri_najvecu_vrijednost(vrijednosti: Tuple[float]) -> float:
+    return max(vrijednosti)
 
 
-with Image.open('test.png') as im:
-    im = np.asarray(im.convert('L'), dtype=float)
-    # pooled_im = np.array()
-    pooled_image: List[float] = []
-    for i in range(1, im.shape[0] - 1, 2):
-        pooled_pixels: List[float] = []
-        for j in range(1, im.shape[1] - 1, 2):
-            pixels: Tuple[float] = (im[i][j], im[i][j + 1], im[i + 1][j], im[i + 1][j + 1])
-            pooled_pixel: float = check_highest_value(pixels)
-            pooled_pixels.append(pooled_pixel)
-        pooled_image.append(pooled_pixels)
+# with Image.open('test.png') as im:
+#     im = np.asarray(im.convert('L'), dtype=float)
+#     # pooled_im = np.array()
+#     pooled_image: List[float] = []
+#     for i in range(1, im.shape[0] - 1, 2):
+#         pooled_pixels: List[float] = []
+#         for j in range(1, im.shape[1] - 1, 2):
+#             pixels: Tuple[float] = (im[i][j], im[i][j + 1], im[i + 1][j], im[i + 1][j + 1])
+#             pooled_pixel: float = check_highest_value(pixels)
+#             pooled_pixels.append(pooled_pixel)
+#         pooled_image.append(pooled_pixels)
+#
+#     new_image = Image.fromarray(np.asarray(pooled_image))
+#     new_im = Image.fromarray(im)
+#     new_im.show()
+#     new_image.show()
 
-    new_image = Image.fromarray(np.asarray(pooled_image))
-    new_im = Image.fromarray(im)
-    new_im.show()
-    new_image.show()
 
-    # koristi scipy
-    # uzmi 2x2 pixela i vrati onog s najvećom vrijednošću
+def udruzi_sliku(naziv_slike: str) -> Image:
+    with Image.open(naziv_slike) as slika:
+        slika = np.asarray(slika.convert('L'), dtype=float)
+        udruzena_slika: List[float] = []
+        for i in range(1, slika.shape[0] - 1, 2):
+            udruzeni_pikseli: List[float] = []
+            for j in range(1, slika.shape[1] - 1, 2):
+                pikseli: Tuple[float] = (slika[i][j], slika[i][j + 1], slika[i + 1][j], slika[i + 1][j + 1])
+                udruzen_piksel: float = provjeri_najvecu_vrijednost(pikseli)
+                udruzeni_pikseli.append(udruzen_piksel)
+            udruzena_slika.append(udruzeni_pikseli)
+
+        nova_slika = Image.fromarray(np.asarray(udruzena_slika))
+        return nova_slika
+
+
+udruzi_sliku('test.png').show()
