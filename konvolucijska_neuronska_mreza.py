@@ -10,9 +10,9 @@ class Konvolucijska_neuronska_mreza():
     def __init__(self, naziv_slike: str) -> None:
         self.slika: np.ndarray = self.pretvori_u_niz(self.ucitaj_sliku(naziv_slike))
         self.mapa_znacajki: np.ndarray = self.konvolucija(self.slika, konvolucijski_filteri)
-        # self.mapa_svojstava_relu = self.relu(self.mapa_svojstava)
-        self.udruzena_slika: Image = self.udruzi_sliku()
-        self.znacajke: np.ndarray = self.trazenje_znacajki()
+        self.mapa_znacajki_relu = self.relu(self.mapa_znacajki)
+        # self.udruzena_slika: Image = self.udruzi_sliku()
+        # self.znacajke: np.ndarray = self.trazenje_znacajki()
 
     def ucitaj_sliku(self, naziv_slike: str) -> Image:  # vraća crno bijelu sliku
         return Image.open(naziv_slike, 'r').convert('L')
@@ -99,7 +99,7 @@ class Konvolucijska_neuronska_mreza():
         for broj_mape in range(mapa_znacajki.shape[-1]):
             for red in np.arange(0, mapa_znacajki.shape[0]):
                 for stupac in np.arange(0, mapa_znacajki.shape[1]):
-                    izlazni_relu[red, stupac, broj_mape] = np.max(mapa_znacajki[red, stupac, broj_mape], 0)
+                    izlazni_relu[red, stupac, broj_mape] = np.max([mapa_znacajki[red, stupac, broj_mape], 0])
         return izlazni_relu
 
     def pretvori_u_1d_niz(self) -> List[float]:  # vraća jednodimenzionalni niz za ulaz u neuronsku mrežu
@@ -107,7 +107,7 @@ class Konvolucijska_neuronska_mreza():
 
 
 konvo: Konvolucijska_neuronska_mreza = Konvolucijska_neuronska_mreza('test3.png')
-# x = konvo.znacajke
-# print(x)
+x = konvo.mapa_znacajki_relu
+print(x)
 # normalizacija_skaliranih_znacajki(x)
 # print(x.ravel().tolist())
