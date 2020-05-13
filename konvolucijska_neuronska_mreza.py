@@ -94,12 +94,13 @@ class Konvolucijska_neuronska_mreza():
             mapa_znacajki[:, :, broj_filtera] = konvolucijska_mapa
         return mapa_znacajki
 
-    def relu(self, mapa_znacajki: np.float_):
-        relu_out = np.zeros(mapa_znacajki.shape)
+    def relu(self, mapa_znacajki: np.float_) -> np.ndarray:
+        izlazni_relu = np.zeros(mapa_znacajki.shape)
         for broj_mape in range(mapa_znacajki.shape[-1]):
             for red in np.arange(0, mapa_znacajki.shape[0]):
                 for stupac in np.arange(0, mapa_znacajki.shape[1]):
-                    relu_out[red, stupac, broj_mape] = np.max(mapa_znacajki[red, stupac, broj_mape], 0)
+                    izlazni_relu[red, stupac, broj_mape] = np.max(mapa_znacajki[red, stupac, broj_mape], 0)
+        return izlazni_relu
 
     def pretvori_u_1d_niz(self) -> List[float]:  # vraća jednodimenzionalni niz za ulaz u neuronsku mrežu
         return self.znacajke.ravel().tolist()
