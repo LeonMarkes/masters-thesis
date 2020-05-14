@@ -9,10 +9,7 @@ class Konvolucijska_neuronska_mreza():
 
     def __init__(self, naziv_slike: str) -> None:
         self.slika: np.ndarray = self.pretvori_u_niz(self.ucitaj_sliku(naziv_slike))
-        self.mapa_znacajki: np.ndarray = self.konvolucija(self.slika, konvolucijski_filteri)
-        self.mapa_znacajki_relu = self.relu(self.mapa_znacajki)
-        self.udruzena_slika: np.ndarray = self.udruzivanje_slike(self.mapa_znacajki_relu)
-        # self.znacajke: np.ndarray = self.trazenje_znacajki()
+        self.udruzena_relu_slika: np.ndarray = None
 
     def ucitaj_sliku(self, naziv_slike: str) -> Image:  # vraća crno bijelu sliku
         return Image.open(naziv_slike, 'r').convert('L')
@@ -29,7 +26,6 @@ class Konvolucijska_neuronska_mreza():
 
     def provjeri_srednju_vrijednost(self, pikseli: np.ndarray) -> float:
         return np.mean(pikseli)
-
 
     def udruzivanje_slike(self, mapa_znacajki: np.ndarray,
                           velicina: int = 2,
@@ -108,11 +104,20 @@ class Konvolucijska_neuronska_mreza():
     def pretvori_u_1d_niz(self) -> List[float]:  # vraća jednodimenzionalni niz za ulaz u neuronsku mrežu
         return self.znacajke.ravel().tolist()
 
+    def konvolucijski_sloj(self):
+        if self.udruzena_relu_slika is None:
+            mapa_znacajki: np.ndarray = self.konvolucija(self.slika, konvolucijski_filteri)
+            mapa_relu_znacajki: np.ndarray = self.relu(mapa_znacajki)
+            self.udruzena_relu_slika = self.udruzivanje_slike(mapa_relu_znacajki)
+        else:
+            filter: np.ndarray = np.random.rand(3, 5, 5, self.udruzena_relu_slika.shape[-1])
+            mapa_znacajki = self.konvolucija(self.udruzena_relu_slika, filter)
+            mapa_relu_znacajki = self.relu(mapa_znacajki)
+            self.udruzena_relu_slika = self.udruzivanje_slike(mapa_relu_znacajki)
 
 konvo: Konvolucijska_neuronska_mreza = Konvolucijska_neuronska_mreza('test3.png')
-x = konvo.udruzena_slika
-print(x)
-# for i in x:
-#     konvo.pretvori_u_sliku(i).show()
-# normalizacija_skaliranih_znacajki(x)
-# print(x.ravel().tolist())
+
+for i in range(3):
+    konvo.konvolucijski_sloj()
+
+print(konvo.udruzena_relu_slika)
