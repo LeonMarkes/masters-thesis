@@ -11,7 +11,7 @@ class Konvolucijska_neuronska_mreza():
         self.slika: np.ndarray = self.pretvori_u_niz(self.ucitaj_sliku(naziv_slike))
         self.mapa_znacajki: np.ndarray = self.konvolucija(self.slika, konvolucijski_filteri)
         self.mapa_znacajki_relu = self.relu(self.mapa_znacajki)
-        # self.udruzena_slika: Image = self.udruzi_sliku()
+        self.udruzena_slika: np.ndarray = self.udruzivanje_slike(self.mapa_znacajki_relu)
         # self.znacajke: np.ndarray = self.trazenje_znacajki()
 
     def ucitaj_sliku(self, naziv_slike: str) -> Image:  # vraća crno bijelu sliku
@@ -25,25 +25,28 @@ class Konvolucijska_neuronska_mreza():
         return Image.fromarray(niz_znakova)
 
     def provjeri_najvecu_vrijednost(self, pikseli: np.ndarray) -> float:
-        return pikseli.max()
+        return np.max(pikseli)
 
     def provjeri_srednju_vrijednost(self, pikseli: np.ndarray) -> float:
-        return pikseli.mean()
+        return np.mean(pikseli)
 
-    def udruzi_sliku(self) -> Image:  # Pooling 2x2
-        slika: np.ndarray = self.pretvori_u_niz(self.slika)
-        udruzena_slika: List[List[float]] = []
-        for i in range(0, slika.shape[0] - 1, 2):
-            udruzeni_pikseli: List[float] = []
-            for j in range(0, slika.shape[1] - 1, 2):
-                pikseli: np.ndarray[float] = np.array((slika[i][j], slika[i][j + 1],
-                                                       slika[i + 1][j], slika[i + 1][j + 1]))
-                udruzen_piksel: float = self.provjeri_najvecu_vrijednost(pikseli)
-                udruzeni_pikseli.append(udruzen_piksel)
-            udruzena_slika.append(udruzeni_pikseli)
 
-        nova_slika = self.pretvori_u_sliku(udruzena_slika)
-        return nova_slika
+    def udruzivanje_slike(self, mapa_znacajki: np.ndarray,
+                          velicina: int = 2,
+                          pomak: int = 2) -> np.ndarray:  # Pooling 2x2
+        udruzena_slika = np.zeros((np.uint16((mapa_znacajki.shape[0] - velicina + 1) / pomak),
+                                   np.uint16((mapa_znacajki.shape[1] - velicina + 1) / pomak),
+                                   mapa_znacajki.shape[-1]))
+        for broj_mape in range(mapa_znacajki.shape[-1]):
+            red_udruzene_slike = 0
+            for red in np.arange(0, mapa_znacajki.shape[0] - velicina - 1, pomak):
+                stupac_udruzene_slike = 0
+                for stupac in np.arange(0, mapa_znacajki.shape[1] - velicina - 1, pomak):
+                    udruzena_slika[red_udruzene_slike, stupac_udruzene_slike, broj_mape] = self.provjeri_najvecu_vrijednost(
+                        [mapa_znacajki[red:red + velicina, stupac:stupac + velicina, broj_mape]])
+                    stupac_udruzene_slike += 1
+                red_udruzene_slike += 1
+        return udruzena_slika
 
     def primjeni_kernel(self, tri_x_tri: np.ndarray, kernel: np.ndarray = konvolucijski_kernel) -> float:
         return np.sum(np.multiply(tri_x_tri, kernel))
@@ -94,7 +97,7 @@ class Konvolucijska_neuronska_mreza():
             mapa_znacajki[:, :, broj_filtera] = konvolucijska_mapa
         return mapa_znacajki
 
-    def relu(self, mapa_znacajki: np.float_) -> np.ndarray:
+    def relu(self, mapa_znacajki: np.ndarray) -> np.ndarray:
         izlazni_relu = np.zeros(mapa_znacajki.shape)
         for broj_mape in range(mapa_znacajki.shape[-1]):
             for red in np.arange(0, mapa_znacajki.shape[0]):
@@ -107,7 +110,9 @@ class Konvolucijska_neuronska_mreza():
 
 
 konvo: Konvolucijska_neuronska_mreza = Konvolucijska_neuronska_mreza('test3.png')
-x = konvo.mapa_znacajki_relu
+x = konvo.udruzena_slika
 print(x)
+# for i in x:
+#     konvo.pretvori_u_sliku(i).show()
 # normalizacija_skaliranih_znacajki(x)
 # print(x.ravel().tolist())
