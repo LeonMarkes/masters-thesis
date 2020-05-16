@@ -2,7 +2,9 @@ import numpy as np
 from PIL import Image
 from kerneli import konvolucijski_kernel, konvolucijski_filteri
 from typing import List
+from neuronska_mreza.util import swish_relu, relu, normalizacija_skaliranih_znacajki
 import sys
+
 
 
 class Konvolucijska_neuronska_mreza():
@@ -38,7 +40,8 @@ class Konvolucijska_neuronska_mreza():
             for red in np.arange(0, mapa_znacajki.shape[0] - velicina - 1, pomak):
                 stupac_udruzene_slike = 0
                 for stupac in np.arange(0, mapa_znacajki.shape[1] - velicina - 1, pomak):
-                    udruzena_slika[red_udruzene_slike, stupac_udruzene_slike, broj_mape] = self.provjeri_najvecu_vrijednost(
+                    udruzena_slika[
+                        red_udruzene_slike, stupac_udruzene_slike, broj_mape] = self.provjeri_najvecu_vrijednost(
                         [mapa_znacajki[red:red + velicina, stupac:stupac + velicina, broj_mape]])
                     stupac_udruzene_slike += 1
                 red_udruzene_slike += 1
@@ -64,7 +67,7 @@ class Konvolucijska_neuronska_mreza():
         return self.pretvori_u_niz(znacajke)
 
     def konvolucija(self, slika: Image, konvolucijski_filteri: np.ndarray) -> np.ndarray:
-        if len(slika.shape) > 2 or len(konvolucijski_filteri.shape) > 3: # Provjere da li su dane vrijednosti ispravne
+        if len(slika.shape) > 2 or len(konvolucijski_filteri.shape) > 3:  # Provjere da li su dane vrijednosti ispravne
             if slika.shape[-1] != konvolucijski_filteri.shape[-1]:
                 print('Error: Slika i filter nisu istih dimenzija.')
                 sys.exit()
@@ -80,11 +83,9 @@ class Konvolucijska_neuronska_mreza():
                                   konvolucijski_filteri.shape[0]))
         for broj_filtera in range(konvolucijski_filteri.shape[0]):
             print('Filter ', broj_filtera + 1)
-            trenutni_filter = konvolucijski_filteri[broj_filtera, :] # dohvačanje filtera
-            print(trenutni_filter)
+            trenutni_filter = konvolucijski_filteri[broj_filtera, :]  # dohvačanje filtera
             if len(trenutni_filter.shape) > 2:
-                konvolucijska_mapa = self.primjeni_kernel(slika[:, :, 0], trenutni_filter[:, :, 0])
-                print(konvolucijska_mapa)
+                konvolucijska_mapa = self.trazenje_znacajki(slika, trenutni_filter)
                 for broj_kanala in range(1, trenutni_filter.shape[-1]):
                     konvolucijska_mapa = konvolucijska_mapa + self.primjeni_kernel(
                         slika[:, :, broj_kanala], trenutni_filter[:, :, broj_kanala])
@@ -98,7 +99,7 @@ class Konvolucijska_neuronska_mreza():
         for broj_mape in range(mapa_znacajki.shape[-1]):
             for red in np.arange(0, mapa_znacajki.shape[0]):
                 for stupac in np.arange(0, mapa_znacajki.shape[1]):
-                    izlazni_relu[red, stupac, broj_mape] = np.max([mapa_znacajki[red, stupac, broj_mape], 0])
+                    izlazni_relu[red, stupac, broj_mape] = relu(mapa_znacajki[red, stupac, broj_mape])
         return izlazni_relu
 
     def pretvori_u_1d_niz(self) -> List[float]:  # vraća jednodimenzionalni niz za ulaz u neuronsku mrežu
@@ -110,14 +111,27 @@ class Konvolucijska_neuronska_mreza():
             mapa_relu_znacajki: np.ndarray = self.relu(mapa_znacajki)
             self.udruzena_relu_slika = self.udruzivanje_slike(mapa_relu_znacajki)
         else:
-            filter: np.ndarray = np.random.rand(3, 5, 5, self.udruzena_relu_slika.shape[-1])
-            mapa_znacajki = self.konvolucija(self.udruzena_relu_slika, filter)
-            mapa_relu_znacajki = self.relu(mapa_znacajki)
-            self.udruzena_relu_slika = self.udruzivanje_slike(mapa_relu_znacajki)
+            znacajke: np.ndarray = np.zeros((
+                np.uint16((self.udruzena_relu_slika.shape[0] - 3) / 2),
+                np.uint16((self.udruzena_relu_slika.shape[1] - 3) / 2),
+                self.udruzena_relu_slika.shape[-1] * 2
+            ))
+            brojac: int = 0
+            for slika in range(self.udruzena_relu_slika.shape[-1]):
+                mapa_znacajki = self.konvolucija(self.udruzena_relu_slika[:, :, slika], konvolucijski_filteri)
+                mapa_relu_znacajki = self.relu(mapa_znacajki)
+                udruzena_relu_slike = self.udruzivanje_slike(mapa_relu_znacajki)
+                for broj_slike in range(udruzena_relu_slike.shape[-1]):
+                    znacajke[:, :, brojac] = udruzena_relu_slike[:, :, broj_slike]
+                    brojac += 1
+            self.udruzena_relu_slika = znacajke
 
-konvo: Konvolucijska_neuronska_mreza = Konvolucijska_neuronska_mreza('test3.png')
+
+konvo: Konvolucijska_neuronska_mreza = Konvolucijska_neuronska_mreza('dog.1.jpg')
 
 for i in range(3):
     konvo.konvolucijski_sloj()
 
 print(konvo.udruzena_relu_slika)
+niz = konvo.udruzena_relu_slika.ravel()
+print(niz)
