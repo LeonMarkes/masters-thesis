@@ -15,10 +15,18 @@ def derivat_sigmoidne_funkcije(x: float) -> float:
     return sig * (1 - sig)
 
 
-def normalize_by_feature_scaling(dataset: List[List[float]]) -> None:
-    for col_num in range(len(dataset[0])):
-        column: List[float] = [row[col_num] for row in dataset]
-        maximum = max(column)
-        minimum = min(column)
-        for row_num in range(len(dataset)):
-            dataset[row_num][col_num] = (dataset[row_num][col_num] - minimum) / (maximum - minimum)
+def relu(x: float) -> float:
+    return max(0, x > 0)
+
+
+def swish_relu(x: float) -> float:
+    return x * sigmoidna_funkcija(x)
+
+
+def normalizacija_skaliranih_znacajki(dataset: List[List[float]]) -> None:
+    for broj_stupca in range(len(dataset[0])):
+        stupac: List[float] = [red[broj_stupca] for red in dataset]
+        maksimum = max(stupac)
+        minimum = min(stupac)
+        for broj_retka in range(len(dataset)):
+            dataset[broj_retka][broj_stupca] = (dataset[broj_retka][broj_stupca] - minimum) / (maksimum - minimum)
