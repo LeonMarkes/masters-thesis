@@ -1,10 +1,9 @@
 import numpy as np
 from PIL import Image
-from kerneli import konvolucijski_kernel, konvolucijski_filteri
+from kerneli import konvolucijski_filteri, konvolucijski_kernel
 from typing import List
 from neuronska_mreza.util import swish_relu, relu, normalizacija_skaliranih_znacajki
 import sys
-
 
 
 class Konvolucijska_neuronska_mreza():
@@ -103,7 +102,7 @@ class Konvolucijska_neuronska_mreza():
         return izlazni_relu
 
     def pretvori_u_1d_niz(self) -> List[float]:  # vraća jednodimenzionalni niz za ulaz u neuronsku mrežu
-        return self.znacajke.ravel().tolist()
+        return self.znacajke.flatten().tolist()
 
     def konvolucijski_sloj(self):
         if self.udruzena_relu_slika is None:
@@ -126,12 +125,38 @@ class Konvolucijska_neuronska_mreza():
                     brojac += 1
             self.udruzena_relu_slika = znacajke
 
+    def pozivanje_konvolucijskog_sloja(self, iteracija: int) -> None:
+        for _ in range(iteracija):
+            self.konvolucijski_sloj()
 
-konvo: Konvolucijska_neuronska_mreza = Konvolucijska_neuronska_mreza('dog.1.jpg')
+    def zgusnjavanje_izlaza(self, velicina: int = 1024) -> List[float]:
+        relu_niz_1d: List[float] = self.udruzena_relu_slika.ravel().tolist()
+        iteracija: np.uint8 = np.uint8(len(relu_niz_1d) / velicina)
+        zgusnuti_niz: List[float] = []
+        for i in range(velicina):
+            zgusnuti_niz.append(sum(relu_niz_1d[:iteracija]))
+            relu_niz_1d = relu_niz_1d[iteracija:]
+        return zgusnuti_niz
 
-for i in range(3):
-    konvo.konvolucijski_sloj()
 
-print(konvo.udruzena_relu_slika)
-niz = konvo.udruzena_relu_slika.ravel()
-print(niz)
+# konvo: Konvolucijska_neuronska_mreza = Konvolucijska_neuronska_mreza('dog.1.jpg')
+#
+# for i in range(3):
+#     konvo.konvolucijski_sloj()
+
+# print(konvo.udruzena_relu_slika.shape)
+
+# for j in range(konvo.udruzena_relu_slika.shape[-1]):
+#     konvo.pretvori_u_sliku(konvo.udruzena_relu_slika[:, :, j]).show()
+
+# niz = konvo.udruzena_relu_slika.ravel().tolist()
+#
+# velicina = len(niz)
+# iteracija = np.uint8(velicina / 1024)
+# novi_niz: List[float] = []
+# for i in range(1024):
+#     novi_niz.append(sum(niz[:iteracija]))
+#     niz = niz[iteracija:]
+#
+# print(novi_niz)
+
