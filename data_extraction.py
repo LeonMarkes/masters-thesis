@@ -4,14 +4,17 @@ import numpy as np
 import os
 from typing import List
 import csv
+import time
 
 
 
 def main():
+    start_time = time.time()
     popis_datoteka: List[str] = ['cats', 'dogs']
     parametri_zivotinja: List[List[float]] = []
     klasifikacija_zivotinja: List[List[float]] = []
     zivotinje: List[List[float]] = []
+    brojac: int = 0
     for naziv_datoteke in popis_datoteka:
         for zivotinja in os.listdir(naziv_datoteke + '/'):
             konvolucija: Konvolucijska_neuronska_mreza = Konvolucijska_neuronska_mreza(
@@ -24,6 +27,9 @@ def main():
             if naziv_datoteke == 'cats':
                 svojstva_zivotinja.append(0.)
                 zivotinje.append(svojstva_zivotinja)
+            brojac += 1
+            print('--- %s seconds ---' % (round(time.time() - start_time, 3)))
+            print(brojac)
         print(naziv_datoteke)
 
     with open('zivotinje.csv', 'w', newline='') as file:
@@ -33,7 +39,7 @@ def main():
     # with open('zivotinje.txt', 'a+') as file:
     #     for red in zivotinje:
     #         file.write(str(red) + '\n')
-
+    print('--- %s seconds ---' % (round(time.time() - start_time, 3)))
 
 
 
