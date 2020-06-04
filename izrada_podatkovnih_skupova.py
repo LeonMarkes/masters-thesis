@@ -10,8 +10,9 @@ import numpy as np
 import os
 import cv2
 
-def oznaci_sliku(naziv_datoteke: str) -> List[float]:  #  prolazi kroz datoteku i kreira matricu identiteta čija
-                                                       #  veličina ovisi o broju jedinstevih slika/životinja u njoj
+
+def oznaci_sliku(naziv_datoteke: str) -> Tuple[List[float], int]:  # prolazi kroz datoteku i kreira matricu identiteta čija
+    #  veličina ovisi o broju jedinstevih slika/životinja u njoj
     jedinstvene_vrijednosti: List[str] = []
     for slika in os.listdir(naziv_datoteke):  # provjeri jedinstven broj životinja
         naziv_slike: str = slika.split('.')[0]
@@ -28,37 +29,26 @@ def oznaci_sliku(naziv_datoteke: str) -> List[float]:  #  prolazi kroz datoteku 
     for vrijednost in jedinstvene_vrijednosti:
         print(vrijednost + ' je označena s ' + str(oznake[jedinstvene_vrijednosti.index(vrijednost)]))
 
-    return oznake_podataka
+    return oznake_podataka, len(jedinstvene_vrijednosti)
 
 
 def dohvati_i_uredi_slike(naziv_datoteke: str,
-                           velicina_slike: Tuple[int] = (200, 200)) -> List[float]:
+                          velicina_slike: Tuple[int] = (200, 200)) -> List[float]:
     slike: List[List[float]] = []
-    os.getcwd()
+    putanja_do_datoteke = os.getcwd() + '\\' + naziv_datoteke
     for naziv_slike in os.listdir(naziv_datoteke):
-        slika:
+        putanja = os.path.join(putanja_do_datoteke, naziv_slike)
+        slika = cv2.resize(cv2.imread(putanja, cv2.IMREAD_GRAYSCALE), velicina_slike)
+        slike.append(slika)
+    return slike
 
 
-
-
-def kreiraj_skup_za_ucenje(naziv_datoteke: str = 'skup_za_ucenje') -> None:
-    skup_za_ucenje: List[List[float]] = []
-    oznake = oznaci_sliku(naziv_datoteke)
+def kreiraj_podatkovni_skup(naziv_datoteke: str = 'podatkovni_skup') -> Tuple[List[np.ndarray], int]:
+    podatkovni_skup: List[List[float]] = []
+    oznake: Tuple[List[float], int] = oznaci_sliku(naziv_datoteke)
     slike = dohvati_i_uredi_slike(naziv_datoteke)
+    for slika, oznaka in zip(slike, oznake[0]):
+        podatkovni_skup.append([np.array(slika), np.array(oznaka)])
+    np.random.shuffle(podatkovni_skup)
+    return podatkovni_skup, oznake[1]
 
-
-    # for slika in os.listdir(naziv_datoteke):
-    #     oznaka: List[float] = oznaci_sliku(slika)
-    # učitaj slike iz datoteka
-    # resizeaj ih da sve budu iste
-    # kreiraj numpy array s svojstvima i klasama np.eye
-
-    return
-
-
-def main():
-    kreiraj_skup_za_ucenje()
-
-
-if __name__ == '__main__':
-    main()
