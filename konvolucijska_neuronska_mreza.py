@@ -2,15 +2,22 @@ import numpy as np
 from PIL import Image
 from kerneli import konvolucijski_filteri, konvolucijski_kernel
 from typing import List
-from neuronska_mreza.util import swish_relu, relu, normalizacija_skaliranih_znacajki
+from util import swish_relu, relu, normalizacija_skaliranih_znacajki
 import sys
 
 
 class Konvolucijska_neuronska_mreza():
 
-    def __init__(self, naziv_slike: str) -> None:
-        self.slika: np.ndarray = self.pretvori_u_niz(self.ucitaj_sliku(naziv_slike))
-        self.udruzena_relu_slika: np.ndarray = None
+    def __init__(self,
+                 podaci: List[np.ndarray],
+                 skriveni_sloj: int,
+                 izlazni_sloj: int) -> None:
+        self.podaci: List[np.ndarray] = podaci
+        self.skriveni_sloj: np.ndarray = np.zeros(skriveni_sloj)
+        self.izlazni_sloj: int = izlazni_sloj
+        self.tezinski_faktori_ss: np.ndarray = None
+        self.tezinski_faktori_is: np.ndarray = None
+        self.odstupanje = 8
 
     def ucitaj_sliku(self, naziv_slike: str) -> Image:  # vraća crno bijelu sliku
         return Image.open(naziv_slike, 'r').convert('L')
@@ -65,7 +72,7 @@ class Konvolucijska_neuronska_mreza():
 
         return self.pretvori_u_niz(znacajke)
 
-    def konvolucija(self, slika: Image, konvolucijski_filteri: np.ndarray) -> np.ndarray:
+    def konvolucija(self, slika: np.ndarray, konvolucijski_filteri: np.ndarray = konvolucijski_filteri) -> np.ndarray:
         if len(slika.shape) > 2 or len(konvolucijski_filteri.shape) > 3:  # Provjere da li su dane vrijednosti ispravne
             if slika.shape[-1] != konvolucijski_filteri.shape[-1]:
                 print('Error: Slika i filter nisu istih dimenzija.')
@@ -81,7 +88,7 @@ class Konvolucijska_neuronska_mreza():
                                   slika.shape[1] - konvolucijski_filteri.shape[1] + 1,
                                   konvolucijski_filteri.shape[0]))
         for broj_filtera in range(konvolucijski_filteri.shape[0]):
-            print('Filter ', broj_filtera + 1)
+            # print('Filter ', broj_filtera + 1)
             trenutni_filter = konvolucijski_filteri[broj_filtera, :]  # dohvačanje filtera
             if len(trenutni_filter.shape) > 2:
                 konvolucijska_mapa = self.trazenje_znacajki(slika, trenutni_filter)
@@ -91,7 +98,7 @@ class Konvolucijska_neuronska_mreza():
             else:
                 konvolucijska_mapa = self.trazenje_znacajki(slika, trenutni_filter)
             mapa_znacajki[:, :, broj_filtera] = konvolucijska_mapa
-        return mapa_znacajki
+        return self.relu(mapa_znacajki)
 
     def relu(self, mapa_znacajki: np.ndarray) -> np.ndarray:
         izlazni_relu = np.zeros(mapa_znacajki.shape)
@@ -137,6 +144,28 @@ class Konvolucijska_neuronska_mreza():
             zgusnuti_niz.append(sum(relu_niz_1d[:iteracija]))
             relu_niz_1d = relu_niz_1d[iteracija:]
         return zgusnuti_niz
+
+    def softmax(self, x) -> np.ndarray:
+        e_x: np.ndarray = np.exp(x - np.max(x))
+        return e_x / e_x.sum()
+
+    def treniranje(self, velicina_skupa: int) -> None:
+        skup_za_ucenje: np.ndarray = self.podaci[:velicina_skupa]
+        skup_za_testiranje: np.ndarray = self.podaci[velicina_skupa:]
+        for parametri, oznaka in skup_za_ucenje:
+            mape_znacajki: np.ndarray = self.konvolucija(parametri)
+            umanjenje_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
+            izravnati_niz: np.ndarray = umanjenje_mape.flatten()
+            self.tezinski_faktori_ss = np.random.random((self.skriveni_sloj.shape[0], izravnati_niz.shape[0]))
+            self.skriveni_sloj = np.dot(izravnati_niz, self.tezinski_faktori_ss.T) + self.odstupanje
+            print(self.softmax(self.skriveni_sloj))
+            # iz skrivenog u output
+            # namjestiti tf
+            # uzmi opet
+            break
+
+
+
 
 
 # konvo: Konvolucijska_neuronska_mreza = Konvolucijska_neuronska_mreza('dog.1.jpg')

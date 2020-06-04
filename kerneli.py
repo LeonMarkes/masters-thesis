@@ -24,12 +24,13 @@ vertikalni_kernel = np.array(
      [-1., 0., 1.]]
 )
 
-filteri = np.zeros((2, 3, 3))
+konvolucijski_filteri = np.zeros((2, 3, 3))
 
-filteri[0, :, :] = np.array([[[-1, 0, 1],
-                              [-1, 0, 1],
-                              [-1, 0, 1]]])
+konvolucijski_filteri[0, :, :] = np.array([[[-1, 0, 1],
+                                          [-1, 0, 1],
+                                          [-1, 0, 1]]])
 
-filteri[1, :, :] = np.array([[[1, 1, 1],
-                              [0, 0, 0],
-                              [-1, -1, -1]]])
+konvolucijski_filteri[1, :, :] = np.array([[[1, 1, 1],
+                                          [0, 0, 0],
+                                          [-1, -1, -1]]])
+
