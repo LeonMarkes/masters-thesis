@@ -32,7 +32,7 @@ def main():
             print(brojac)
         print(naziv_datoteke)
 
-    with open('zivotinje.csv', 'w', newline='') as file:
+    with open('zivotinje.csv', 'a+', newline='') as file:
         writer = csv.writer(file)
         writer.writerows(zivotinje)
 

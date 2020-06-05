@@ -39,13 +39,12 @@ def provjeri_najvecu_vrijednost(vrijednosti: Tuple[float]) -> float:
 #     new_image.show()
 
 
-def udruzi_sliku(naziv_slike: str) -> Image:
-    with Image.open(naziv_slike) as slika:
+def udruzi_sliku(slika: Image) -> Image:
         slika = np.asarray(slika.convert('L'), dtype=float)
-        udruzena_slika: List[float] = []
-        for i in range(1, slika.shape[0] - 1, 2):
+        udruzena_slika: List[List[float]] = []
+        for i in range(0, slika.shape[0] - 1, 2):
             udruzeni_pikseli: List[float] = []
-            for j in range(1, slika.shape[1] - 1, 2):
+            for j in range(0, slika.shape[1] - 1, 2):
                 pikseli: Tuple[float] = (slika[i][j], slika[i][j + 1], slika[i + 1][j], slika[i + 1][j + 1])
                 udruzen_piksel: float = provjeri_najvecu_vrijednost(pikseli)
                 udruzeni_pikseli.append(udruzen_piksel)
@@ -55,4 +54,4 @@ def udruzi_sliku(naziv_slike: str) -> Image:
         return nova_slika
 
 
-udruzi_sliku('test.png').show()
+# udruzi_sliku('test.png').show()

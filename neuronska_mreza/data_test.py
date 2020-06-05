@@ -4,7 +4,7 @@ from util import normalize_by_feature_scaling
 from neuronska_mreza import Neuronska_mreza
 from random import shuffle
 import numpy as np
-import time as time
+import time
 
 if __name__ == '__main__':
     start_time = time.time()

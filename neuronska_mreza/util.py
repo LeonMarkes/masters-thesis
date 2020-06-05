@@ -16,7 +16,7 @@ def derivat_sigmoidne_funkcije(x: float) -> float:
 
 
 def relu(x: float) -> float:
-    return max(0, x > 0)
+    return max(0, x)
 
 
 def swish_relu(x: float) -> float:
