@@ -11,21 +11,17 @@ class Konvolucijska_neuronska_mreza:
     def __init__(self,
                  podaci: List[np.ndarray],
                  skriveni_sloj: int,
-                 izlazni_sloj: int) -> None:
+                 izlazni_sloj: int,
+                 stopa_ucenja: float) -> None:
         self.podaci: List[np.ndarray] = podaci
-        self.skriveni_sloj = np.zeros(skriveni_sloj)
-        self.izlazni_sloj = np.zeros(izlazni_sloj)
+        self.skriveni_sloj = skriveni_sloj
+        self.izlazni_sloj = izlazni_sloj
         self.tf_ss: np.ndarray = None
         self.tf_is: np.ndarray = None
         self.o_ss = None
         self.o_is = None
-        self.relu_f = lambda x: x * (x > 0)
+        self.stopa_ucenja = stopa_ucenja
 
-    def ucitaj_sliku(self, naziv_slike: str) -> Image:  # vraća crno bijelu sliku
-        return Image.open(naziv_slike, 'r').convert('L')
-
-    def pretvori_u_niz(self, vrijednost) -> np.ndarray:
-        return np.asarray(vrijednost, dtype=float)
 
     def pretvori_u_sliku(self, vrijednost: List[List[float]]) -> Image:
         niz_znakova: np.ndarray = self.pretvori_u_niz(vrijednost)
@@ -34,8 +30,6 @@ class Konvolucijska_neuronska_mreza:
     def provjeri_najvecu_vrijednost(self, pikseli: np.ndarray) -> float:
         return np.max(pikseli)
 
-    def provjeri_srednju_vrijednost(self, pikseli: np.ndarray) -> float:
-        return np.mean(pikseli)
 
     def udruzivanje_slike(self, mapa_znacajki: np.ndarray,
                           velicina: int = 2,
@@ -100,9 +94,12 @@ class Konvolucijska_neuronska_mreza:
             else:
                 konvolucijska_mapa = self.trazenje_znacajki(slika, trenutni_filter)
             mapa_znacajki[:, :, broj_filtera] = konvolucijska_mapa
-        return self.relu_f(mapa_znacajki)
+        return self.relu(mapa_znacajki)
 
-    def relu(self, mapa_znacajki: np.ndarray) -> np.ndarray:
+    def relu(self, x: np.ndarray) -> np.ndarray:
+        return x * (x > 0)
+
+    def relu_f(self, mapa_znacajki: np.ndarray) -> np.ndarray:
         izlazni_relu = np.zeros(mapa_znacajki.shape)
         if len(mapa_znacajki) == 1:
             for stavka in range(mapa_znacajki.shape[0]):
@@ -114,9 +111,6 @@ class Konvolucijska_neuronska_mreza:
                     for stupac in np.arange(0, mapa_znacajki.shape[1]):
                         izlazni_relu[red, stupac, broj_mape] = relu(mapa_znacajki[red, stupac, broj_mape])
             return izlazni_relu
-
-    def pretvori_u_1d_niz(self) -> List[float]:  # vraća jednodimenzionalni niz za ulaz u neuronsku mrežu
-        return self.znacajke.flatten().tolist()
 
     def konvolucijski_sloj(self):
         if self.udruzena_relu_slika is None:
@@ -143,68 +137,84 @@ class Konvolucijska_neuronska_mreza:
         for _ in range(iteracija):
             self.konvolucijski_sloj()
 
-    def zgusnjavanje_izlaza(self, velicina: int = 1024) -> List[float]:
-        relu_niz_1d: List[float] = self.udruzena_relu_slika.ravel().tolist()
-        iteracija: np.uint8 = np.uint8(len(relu_niz_1d) / velicina)
-        zgusnuti_niz: List[float] = []
-        for i in range(velicina):
-            zgusnuti_niz.append(sum(relu_niz_1d[:iteracija]))
-            relu_niz_1d = relu_niz_1d[iteracija:]
-        return zgusnuti_niz
+
+    def generiraj_tezinske_faktore(self, ulazni_sloj):
+        self.tf_ss = np.random.random((ulazni_sloj, self.skriveni_sloj))
+        self.tf_is = np.random.random((self.skriveni_sloj, self.izlazni_sloj))
+        self.o_ss = np.zeros((self.skriveni_sloj, 1))
+        self.o_is = np.zeros((self.izlazni_sloj, 1))
+
+    def feedforward(self) -> None:
+        skup_za_ucenje: np.ndarray = self.podaci[:3000]
+        skup_za_testiranje: np.ndarray = self.podaci[3000:]
+        m: int = len(skup_za_ucenje)
+        brojac = 0 # za testiranje koda
+        for parametri, oznaka in skup_za_ucenje:
+            oznaka = oznaka.reshape(-1, 1)
+            mape_znacajki: np.ndarray = self.konvolucija(parametri, konvolucijski_filteri)
+            umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
+
+            mape_znacajki: np.ndarray = self.konvolucija(umanjene_mape, detekcija_ruba)
+            umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
+
+            izravnati_niz = umanjene_mape.reshape(-1, 1)
+            if self.tf_ss is None:
+                self.generiraj_tezinske_faktore(izravnati_niz.shape[0])
+
+
+
 
     def treniranje(self, velicina_skupa: int) -> None:
         skup_za_ucenje: np.ndarray = self.podaci[:velicina_skupa]
         skup_za_testiranje: np.ndarray = self.podaci[velicina_skupa:]
         m:int = len(skup_za_ucenje)
-        tezinski_faktori = False
+        tezinski_faktori = True
+        brojac = 0
         for parametri, oznaka in skup_za_ucenje:
+            oznaka = oznaka.reshape(-1, 1)
             mape_znacajki: np.ndarray = self.konvolucija(parametri, detekcija_ruba)
+            umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
+
+            mape_znacajki: np.ndarray = self.konvolucija(umanjene_mape, detekcija_ruba)
             umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
 
             izravnati_niz = umanjene_mape.reshape(-1, 1)
 
             if tezinski_faktori:
-                # weights
-                pass
-            else:
                 n_x = izravnati_niz.shape[0]
                 n_h = self.skriveni_sloj.shape[0]
                 n_y = self.izlazni_sloj.shape[0]
-                print(n_x, n_h, n_y)
 
                 self.tf_ss = np.random.randn(n_h, n_x) * .01
                 self.o_ss = np.zeros((n_h, 1))
                 self.tf_is = np.random.randn(n_y, n_h) * .01
                 self.o_is = np.zeros((n_y, 1))
-                tezinski_faktori = True
+                tezinski_faktori = False
 
-            Z1 = np.dot(self.tf_ss, izravnati_niz)
-            print(Z1.shape)
+            Z1 = np.dot(self.tf_ss, izravnati_niz) + self.o_ss
             A1 = self.relu_f(Z1)
-            print(A1.shape)
-            Z2 = np.dot(self.tf_is, A1)
-            print(Z2.shape)
+            Z2 = np.dot(self.tf_is, A1) + self.o_is
             A2 = softmax(Z2)
-            print(A2.shape)
 
-            logprobs = np.multiply(np.log(A2), oznaka) + np.multiply((1 - oznaka), np.log(1 - A2))
-            cost = - np.sum(logprobs) / m
+            # logprobs = np.multiply(np.log(A2), oznaka) + np.multiply((1 - oznaka), np.log(1 - A2))
+            # cost = - np.sum(logprobs) / m
 
             print(A2, oznaka)
-            dZ2 = A2.T - oznaka
-            dW2 = (1 / m) * np.dot(dZ2, A1.T)
+            # print(cost)
+            dZ2 = A2 - oznaka
+            dW2 = (1 / m) * np.dot(dZ2.T, A1.T)
             db2 = (1 / m) * np.sum(dZ2, axis=1, keepdims=True)
-            dZ1 = np.multiply(np.dot(self.tf_is.T, dZ2), 1 - np.power(A1, 2))
+            dZ1 = np.multiply(np.dot(self.tf_is.T, dZ2.T), 1 - np.power(A1, 2))
             dW1 = (1 / m) * np.dot(dZ1, izravnati_niz.T)
             db1 = (1 / m) * np.sum(dZ1, axis=1, keepdims=True)
 
+            self.tf_ss = self.tf_ss - self.stopa_ucenja * dW1
+            self.o_ss = self.o_ss - self.stopa_ucenja * db1
+            self.tf_is = self.tf_is - self.stopa_ucenja * dW2
+            self.o_is = self.o_is - self.stopa_ucenja * db2
 
-
-
-
-
-
-            break
-
-
+            if brojac == 5:
+                break
+            else:
+                brojac += 1
 
