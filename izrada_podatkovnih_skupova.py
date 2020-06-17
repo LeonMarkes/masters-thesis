@@ -50,5 +50,6 @@ def kreiraj_podatkovni_skup(naziv_datoteke: str = 'podatkovni_skup') -> Tuple[Li
     for slika, oznaka in zip(slike, oznake[0]):
         podatkovni_skup.append([np.array(slika), np.array(oznaka)])
     np.random.shuffle(podatkovni_skup)
+    np.save('podatkovni_skup.npy', podatkovni_skup)
     return podatkovni_skup, oznake[1]
 
