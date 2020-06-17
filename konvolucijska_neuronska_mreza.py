@@ -142,62 +142,71 @@ class Konvolucijska_neuronska_mreza:
 
 
     def generiraj_tezinske_faktore(self, ulazni_sloj):
-        self.tf_ss = np.random.random((ulazni_sloj, self.skriveni_sloj))
-        self.tf_is = np.random.random((self.skriveni_sloj, self.izlazni_sloj))
+        self.tf_ss = np.random.random((self.skriveni_sloj, ulazni_sloj))
+        self.tf_is = np.random.random((self.izlazni_sloj, self.skriveni_sloj))
         self.o_ss = np.zeros((self.skriveni_sloj, 1))
         self.o_is = np.zeros((self.izlazni_sloj, 1))
 
     def krizna_entropija(self, predvidanje: np.ndarray, oznaka: np.ndarray, m: int) -> np.ndarray:
-        gubitak = (1 / m) * np.sum(- oznaka * np.log(predvidanje) - (1 - oznaka) * np.log(1 - predvidanje))
-        return np.squeeze(gubitak)
+        logprobs = np.multiply(oznaka, np.log(predvidanje)) + np.multiply((1 - oznaka), np.log(1 - predvidanje))
+        return - np.sum(logprobs) / m
+        # gubitak = (1 / m) * np.sum(- oznaka * np.log(predvidanje) - (1 - oznaka) * np.log(1 - predvidanje))
+        # return np.squeeze(gubitak)
+
+    def mse(self, predvidanje: np.ndarray, oznaka: np.ndarray) -> np.ndarray:
+        return np.square(predvidanje - oznaka).mean()
 
     def feedforward(self) -> None:
-        skup_za_ucenje: np.ndarray = self.podaci[:500]
-        skup_za_testiranje: np.ndarray = self.podaci[500:]
+        skup_za_ucenje: np.ndarray = self.podaci[:1000]
+        skup_za_testiranje: np.ndarray = self.podaci[2000:]
         m: int = len(skup_za_ucenje)
         prethodni_gubitak: float = 0.
         brojac = 0
         popis_gubitaka: List[float] = []
-        for parametri, oznaka in skup_za_ucenje:
-            oznaka = oznaka.reshape(-1, 1)
-            mape_znacajki: np.ndarray = self.konvolucija(parametri, detekcija_ruba)
-            umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
+        for _ in range(10):
+            for parametri, oznaka in skup_za_ucenje:
+                oznaka = oznaka.reshape(-1, 1)
+                mape_znacajki: np.ndarray = self.konvolucija(parametri, detekcija_ruba)
+                umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
 
-            mape_znacajki: np.ndarray = self.konvolucija(umanjene_mape, detekcija_ruba)
-            umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
+                mape_znacajki: np.ndarray = self.konvolucija(umanjene_mape, detekcija_ruba)
+                umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
 
-            izravnati_niz = umanjene_mape.reshape(-1, 1)
-            izravnati_niz = izravnati_niz / np.linalg.norm(izravnati_niz)
-            if self.tf_ss is None:
-                self.generiraj_tezinske_faktore(izravnati_niz.shape[0])
+                izravnati_niz = umanjene_mape.reshape(-1, 1)
+                izravnati_niz = izravnati_niz / np.linalg.norm(izravnati_niz)
+                if self.tf_ss is None:
+                    self.generiraj_tezinske_faktore(izravnati_niz.shape[0])
 
-            skriveni_sloj = self.relu(np.dot(self.tf_ss.T, izravnati_niz) + self.o_ss)
-            izlazni_sloj = softmax(np.dot(self.tf_is.T, skriveni_sloj) + self.o_is)
-            gubitak = self.krizna_entropija(izlazni_sloj, oznaka, m)
-            print(gubitak)
-            popis_gubitaka.append(gubitak)
-            if gubitak > prethodni_gubitak:
+                skriveni_sloj = self.relu(np.dot(self.tf_ss, izravnati_niz) + self.o_ss)
+                izlazni_sloj = softmax(np.dot(self.tf_is, skriveni_sloj) + self.o_is)
+                gubitak = self.krizna_entropija(izlazni_sloj, oznaka, m)
+
+                print(gubitak)
+                popis_gubitaka.append(gubitak)
 
                 dZ2 = izlazni_sloj - oznaka
                 dW2 = (1 / m) * np.dot(dZ2, skriveni_sloj.T)
                 db2 = (1 / m) * np.sum(dZ2, axis=1, keepdims=True)
-                dZ1 = np.multiply(np.dot(self.tf_is, dZ2), 1 - np.power(skriveni_sloj, 2))
+                dZ1 = np.multiply(np.dot(self.tf_is.T, dZ2), 1 - np.power(skriveni_sloj, 2))
                 dW1 = (1 / m) * np.dot(dZ1, izravnati_niz.T)
                 db1 = (1 / m) * np.sum(dZ1, axis=1, keepdims=True)
                 print()
-                self.tf_ss = self.tf_ss - (self.stopa_ucenja * dW1).T
+                self.tf_ss = self.tf_ss - self.stopa_ucenja * dW1
                 self.o_ss = self.o_ss - self.stopa_ucenja * db1
-                self.tf_is = self.tf_is - (self.stopa_ucenja * dW2).T
+                self.tf_is = self.tf_is - self.stopa_ucenja * dW2
                 self.o_is = self.o_is - self.stopa_ucenja * db2
-                print(self.tf_is)
-                prethodni_gubitak = gubitak
+                # print(self.tf_is)
 
-            if brojac == 50:
-                break
-            else:
-                brojac += 1
+                # if brojac == 10:
+                #     break
+                # else:
+                #     brojac += 1
+
+
         plt.plot(popis_gubitaka)
         plt.show()
+        tf_i_o = [self.tf_ss, self.tf_is, self.o_ss, self.o_is]
+        np.save('tf_i_o.npy', tf_i_o)
 
 
 
