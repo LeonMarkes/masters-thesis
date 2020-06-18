@@ -4,6 +4,7 @@ from kerneli import konvolucijski_filteri, detekcija_ruba
 from typing import List
 from util import relu, softmax
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 import sys
 
 
@@ -157,16 +158,19 @@ class Konvolucijska_neuronska_mreza:
         return np.square(predvidanje - oznaka).mean()
 
     def feedforward(self) -> None:
-        skup_za_ucenje: np.ndarray = self.podaci[:1000]
+        skup_za_ucenje: np.ndarray = self.podaci[:75]
         skup_za_testiranje: np.ndarray = self.podaci[2000:]
         m: int = len(skup_za_ucenje)
         prethodni_gubitak: float = 0.
         brojac = 0
         popis_gubitaka: List[float] = []
-        for _ in range(10):
-            for parametri, oznaka in skup_za_ucenje:
+        for _ in tqdm(range(10)):
+            for parametri, oznaka in tqdm(skup_za_ucenje):
                 oznaka = oznaka.reshape(-1, 1)
                 mape_znacajki: np.ndarray = self.konvolucija(parametri, detekcija_ruba)
+                umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
+
+                mape_znacajki: np.ndarray = self.konvolucija(umanjene_mape, detekcija_ruba)
                 umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
 
                 mape_znacajki: np.ndarray = self.konvolucija(umanjene_mape, detekcija_ruba)
@@ -181,7 +185,7 @@ class Konvolucijska_neuronska_mreza:
                 izlazni_sloj = softmax(np.dot(self.tf_is, skriveni_sloj) + self.o_is)
                 gubitak = self.krizna_entropija(izlazni_sloj, oznaka, m)
 
-                print(gubitak)
+                # print(gubitak)
                 popis_gubitaka.append(gubitak)
 
                 dZ2 = izlazni_sloj - oznaka
@@ -190,7 +194,7 @@ class Konvolucijska_neuronska_mreza:
                 dZ1 = np.multiply(np.dot(self.tf_is.T, dZ2), 1 - np.power(skriveni_sloj, 2))
                 dW1 = (1 / m) * np.dot(dZ1, izravnati_niz.T)
                 db1 = (1 / m) * np.sum(dZ1, axis=1, keepdims=True)
-                print()
+                # print()
                 self.tf_ss = self.tf_ss - self.stopa_ucenja * dW1
                 self.o_ss = self.o_ss - self.stopa_ucenja * db1
                 self.tf_is = self.tf_is - self.stopa_ucenja * dW2
@@ -206,4 +210,34 @@ class Konvolucijska_neuronska_mreza:
         plt.plot(popis_gubitaka)
         plt.show()
         tf_i_o = [self.tf_ss, self.tf_is, self.o_ss, self.o_is]
-        np.save('tf_i_o.npy', tf_i_o)
+        np.save('tf_i_o4.npy', tf_i_o)
+
+
+
+    def test_ff(self):
+        skup_za_testiranje: np.ndarray = self.podaci
+        self.tf_ss, self.tf_is, self.o_ss, self.o_is = np.load('tf_i_o4.npy', allow_pickle=True)
+        brojac = 0
+        tocno = 0
+        for parametri, oznaka in tqdm(skup_za_testiranje):
+            oznaka = oznaka.reshape(-1, 1)
+            mape_znacajki: np.ndarray = self.konvolucija(parametri, detekcija_ruba)
+            umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
+
+            mape_znacajki: np.ndarray = self.konvolucija(umanjene_mape, detekcija_ruba)
+            umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
+
+            mape_znacajki: np.ndarray = self.konvolucija(umanjene_mape, detekcija_ruba)
+            umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
+
+            izravnati_niz = umanjene_mape.reshape(-1, 1)
+            izravnati_niz = izravnati_niz / np.linalg.norm(izravnati_niz)
+
+            skriveni_sloj = self.relu(np.dot(self.tf_ss, izravnati_niz) + self.o_ss)
+            izlazni_sloj = softmax(np.dot(self.tf_is, skriveni_sloj) + self.o_is)
+            print(izlazni_sloj, oznaka)
+            pozicija = np.where(oznaka == 1.)[0][0]
+            if izlazni_sloj[pozicija] > .5:
+                tocno += 1
+            brojac += 1
+        print('Točnost modela je:', str(tocno / brojac))

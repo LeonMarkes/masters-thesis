@@ -6,9 +6,13 @@ import numpy as np
 
 
 def main():
-    podaci: Tuple[List[np.ndarray], int] = kreiraj_podatkovni_skup()
-    konv_mreza = Konvolucijska_neuronska_mreza(podaci[0], skriveni_sloj=10, izlazni_sloj=podaci[1])
-    konv_mreza.treniranje(500)
+    # podaci, oznaka = kreiraj_podatkovni_skup('100')
+    # konv_mreza = Konvolucijska_neuronska_mreza(podaci, skriveni_sloj=20, izlazni_sloj=oznaka, stopa_ucenja=.008)
+    # konv_mreza.feedforward()
+    podaci, oznaka = kreiraj_podatkovni_skup('freya')
+    test_mr = Konvolucijska_neuronska_mreza(podaci, skriveni_sloj=20, izlazni_sloj=oznaka, stopa_ucenja=.001)
+    test_mr.test_ff()
+
 
 
 if __name__ == '__main__':
