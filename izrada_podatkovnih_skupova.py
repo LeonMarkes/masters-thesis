@@ -33,7 +33,7 @@ def oznaci_sliku(naziv_datoteke: str) -> Tuple[List[float], int]:  # prolazi kro
 
 
 def dohvati_i_uredi_slike(naziv_datoteke: str,
-                          velicina_slike: Tuple[int] = (250, 250)) -> List[float]:
+                          velicina_slike: Tuple[int] = (350, 350)) -> List[float]:
     slike: List[List[float]] = []
     putanja_do_datoteke = os.getcwd() + '\\' + naziv_datoteke
     for naziv_slike in os.listdir(naziv_datoteke):
