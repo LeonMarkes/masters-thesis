@@ -1,5 +1,4 @@
 import numpy as np
-from PIL import Image
 from kerneli import konvolucijski_filteri, detekcija_ruba, sobel_filteri
 from typing import List
 from util import relu, softmax
@@ -27,13 +26,8 @@ class Konvolucijska_neuronska_mreza:
     def pretvori_u_niz(self, vrijednost) -> np.ndarray:
         return np.asarray(vrijednost, dtype=float)
 
-    # def pretvori_u_sliku(self, vrijednost: List[List[float]]) -> Image:
-    #     niz_znakova: np.ndarray = self.pretvori_u_niz(vrijednost)
-    #     return Image.fromarray(niz_znakova)
-
     def provjeri_najvecu_vrijednost(self, pikseli: np.ndarray) -> float:
         return np.max(pikseli)
-
 
     def udruzivanje_slike(self, mapa_znacajki: np.ndarray,
                           velicina: int = 2,
@@ -54,7 +48,6 @@ class Konvolucijska_neuronska_mreza:
         return udruzena_slika
 
     def primjeni_kernel(self, tri_x_tri: np.ndarray, kernel: np.ndarray) -> float:
-        # odvoji tensore
         return np.sum(np.multiply(tri_x_tri, kernel))
 
     def trazenje_znacajki(self, slika: np.ndarray, filter: np.ndarray) -> np.ndarray:
@@ -77,24 +70,11 @@ class Konvolucijska_neuronska_mreza:
         return self.pretvori_u_niz(znacajke)
 
     def konvolucija(self, slika: np.ndarray, konvolucijski_filteri: np.ndarray) -> np.ndarray:
-        # if len(slika.shape) > 2 or len(konvolucijski_filteri.shape) > 3:  # Provjere da li su dane vrijednosti ispravne
-        #     if slika.shape[-1] != konvolucijski_filteri.shape[-1]:
-        #         print('Error: Slika i filter nisu istih dimenzija.', slika.shape, konvolucijski_filteri.shape)
-        #         sys.exit()
-        # if konvolucijski_filteri.shape[1] != konvolucijski_filteri.shape[2]:
-        #     print('Error: Matrice nisu kvadratne')
-        #     sys.exit()
-        # if konvolucijski_filteri.shape[1] % 2 == 0:
-        #     print('Error: Matrica nema neparni broj vrijednosti.')
-        #     sys.exit()
-
         mapa_znacajki = np.zeros((slika.shape[0] - konvolucijski_filteri.shape[1] + 1,
                                   slika.shape[1] - konvolucijski_filteri.shape[1] + 1,
                                   konvolucijski_filteri.shape[0]))
         for broj_filtera in range(konvolucijski_filteri.shape[0]):
-            # print('Filter ', broj_filtera + 1)
             trenutni_filter = konvolucijski_filteri[broj_filtera, :]  # dohvačanje filtera
-            # print(trenutni_filter, trenutni_filter.shape)
             if len(slika.shape) > 2:
                 konvolucijska_mapa = self.trazenje_znacajki(slika[:, :, 0], trenutni_filter)
                 for broj_kanala in range(1, slika.shape[-1]):
@@ -108,45 +88,6 @@ class Konvolucijska_neuronska_mreza:
     def relu(self, x: np.ndarray) -> np.ndarray:
         return x * (x > 0)
 
-    # def relu_f(self, mapa_znacajki: np.ndarray) -> np.ndarray:
-    #     izlazni_relu = np.zeros(mapa_znacajki.shape)
-    #     if len(mapa_znacajki) == 1:
-    #         for stavka in range(mapa_znacajki.shape[0]):
-    #             print(mapa_znacajki[stavka])
-    #             izlazni_relu[stavka] = relu(mapa_znacajki[stavka])
-    #     else:
-    #         for broj_mape in range(mapa_znacajki.shape[-1]):
-    #             for red in np.arange(0, mapa_znacajki.shape[0]):
-    #                 for stupac in np.arange(0, mapa_znacajki.shape[1]):
-    #                     izlazni_relu[red, stupac, broj_mape] = relu(mapa_znacajki[red, stupac, broj_mape])
-    #         return izlazni_relu
-
-    # def konvolucijski_sloj(self):
-    #     if self.udruzena_relu_slika is None:
-    #         mapa_znacajki: np.ndarray = self.konvolucija(self.slika, konvolucijski_filteri)
-    #         mapa_relu_znacajki: np.ndarray = self.relu(mapa_znacajki)
-    #         self.udruzena_relu_slika = self.udruzivanje_slike(mapa_relu_znacajki)
-    #     else:
-    #         znacajke: np.ndarray = np.zeros((
-    #             np.uint16((self.udruzena_relu_slika.shape[0] - 3) / 2),
-    #             np.uint16((self.udruzena_relu_slika.shape[1] - 3) / 2),
-    #             self.udruzena_relu_slika.shape[-1] * 2
-    #         ))
-    #         brojac: int = 0
-    #         for slika in range(self.udruzena_relu_slika.shape[-1]):
-    #             mapa_znacajki = self.konvolucija(self.udruzena_relu_slika[:, :, slika], konvolucijski_filteri)
-    #             mapa_relu_znacajki = self.relu(mapa_znacajki)
-    #             udruzena_relu_slike = self.udruzivanje_slike(mapa_relu_znacajki)
-    #             for broj_slike in range(udruzena_relu_slike.shape[-1]):
-    #                 znacajke[:, :, brojac] = udruzena_relu_slike[:, :, broj_slike]
-    #                 brojac += 1
-    #         self.udruzena_relu_slika = znacajke
-    #
-    # def pozivanje_konvolucijskog_sloja(self, iteracija: int) -> None:
-    #     for _ in range(iteracija):
-    #         self.konvolucijski_sloj()
-
-
     def generiraj_tezinske_faktore(self, ulazni_sloj):
         self.tf_ss = np.random.random((self.skriveni_sloj, ulazni_sloj))
         self.tf_is = np.random.random((self.izlazni_sloj, self.skriveni_sloj))
@@ -156,8 +97,6 @@ class Konvolucijska_neuronska_mreza:
     def krizna_entropija(self, predvidanje: np.ndarray, oznaka: np.ndarray, m: int) -> np.ndarray:
         logprobs = np.multiply(oznaka, np.log(predvidanje)) + np.multiply((1 - oznaka), np.log(1 - predvidanje))
         return - np.sum(logprobs) / m
-        # gubitak = (1 / m) * np.sum(- oznaka * np.log(predvidanje) - (1 - oznaka) * np.log(1 - predvidanje))
-        # return np.squeeze(gubitak)
 
     def mse(self, predvidanje: np.ndarray, oznaka: np.ndarray) -> np.ndarray:
         return np.square(predvidanje - oznaka).mean()
@@ -165,8 +104,6 @@ class Konvolucijska_neuronska_mreza:
     def feedforward(self) -> None:
         skup_za_ucenje: np.ndarray = self.podaci[:75]
         m: int = len(skup_za_ucenje)
-        prethodni_gubitak: float = 0.
-        brojac = 0
         popis_gubitaka: List[float] = []
         for _ in tqdm(range(4)):
             for parametri, oznaka in tqdm(skup_za_ucenje):
@@ -203,13 +140,6 @@ class Konvolucijska_neuronska_mreza:
                 self.o_ss = self.o_ss - self.stopa_ucenja * db1
                 self.tf_is = self.tf_is - self.stopa_ucenja * dW2
                 self.o_is = self.o_is - self.stopa_ucenja * db2
-                # print(self.tf_is)
-
-                # if brojac == 10:
-                #     break
-                # else:
-                #     brojac += 1
-
 
         plt.plot(popis_gubitaka)
         plt.show()
