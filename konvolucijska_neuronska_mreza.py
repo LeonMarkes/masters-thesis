@@ -19,9 +19,11 @@ class Konvolucijska_neuronska_mreza:
         self.izlazni_sloj = izlazni_sloj
         self.tf_ss: np.ndarray = None
         self.tf_is: np.ndarray = None
-        self.o_ss = None
-        self.o_is = None
-        self.stopa_ucenja = stopa_ucenja
+        self.o_ss: np.ndarray = None
+        self.o_is: np.ndarray = None
+        self.stopa_ucenja: float = stopa_ucenja
+        self.mape_znacajki: np.ndarray = None
+        self.umanjene_mape: np.ndarray = None
 
     def pretvori_u_niz(self, vrijednost) -> np.ndarray:
         return np.asarray(vrijednost, dtype=float)
@@ -29,31 +31,29 @@ class Konvolucijska_neuronska_mreza:
     def provjeri_najvecu_vrijednost(self, pikseli: np.ndarray) -> float:
         return np.max(pikseli)
 
-    def udruzivanje_slike(self, mapa_znacajki: np.ndarray,
+    def udruzivanje_slike(self,
                           velicina: int = 2,
-                          pomak: int = 2) -> np.ndarray:  # Pooling 2x2
-        udruzena_slika = np.zeros((np.uint16((mapa_znacajki.shape[0] - velicina + 1) / pomak),
-                                   np.uint16((mapa_znacajki.shape[1] - velicina + 1) / pomak),
-                                   mapa_znacajki.shape[-1]))
-        for broj_mape in range(mapa_znacajki.shape[-1]):
+                          pomak: int = 2) -> None:  # Pooling 2x2
+        udruzena_slika = np.zeros((np.uint16((self.mape_znacajki.shape[0] - velicina + 1) / pomak),
+                                   np.uint16((self.mape_znacajki.shape[1] - velicina + 1) / pomak),
+                                   self.mape_znacajki.shape[-1]))
+        for broj_mape in range(self.mape_znacajki.shape[-1]):
             red_udruzene_slike = 0
-            for red in np.arange(0, mapa_znacajki.shape[0] - velicina - 1, pomak):
+            for red in np.arange(0, self.mape_znacajki.shape[0] - velicina - 1, pomak):
                 stupac_udruzene_slike = 0
-                for stupac in np.arange(0, mapa_znacajki.shape[1] - velicina - 1, pomak):
+                for stupac in np.arange(0, self.mape_znacajki.shape[1] - velicina - 1, pomak):
                     udruzena_slika[
                         red_udruzene_slike, stupac_udruzene_slike, broj_mape] = self.provjeri_najvecu_vrijednost(
-                        [mapa_znacajki[red:red + velicina, stupac:stupac + velicina, broj_mape]])
+                        [self.mape_znacajki[red:red + velicina, stupac:stupac + velicina, broj_mape]])
                     stupac_udruzene_slike += 1
                 red_udruzene_slike += 1
-        return udruzena_slika
+        self.umanjene_mape = udruzena_slika
 
     def primjeni_kernel(self, tri_x_tri: np.ndarray, kernel: np.ndarray) -> float:
         return np.sum(np.multiply(tri_x_tri, kernel))
 
-    def trazenje_znacajki(self, slika: np.ndarray, filter: np.ndarray) -> np.ndarray:
+    def trazenje_znacajki(self, slika: np.ndarray, filter: np.ndarray) -> None:
         znacajke: List[List[List[float]]] = []
-        if len(slika.shape) > 2:
-            print(slika.shape)
         for i in range(1, slika.shape[0] - 1):
             red_znacajki: List[float] = []
             for j in range(1, slika.shape[1] - 1):
@@ -63,10 +63,8 @@ class Konvolucijska_neuronska_mreza:
                     [slika[i + 1][j - 1], slika[i + 1][j], slika[i + 1][j + 1]]
                 ])
                 znacajka: float = self.primjeni_kernel(tri_x_tri, filter)
-
                 red_znacajki.append(znacajka)
             znacajke.append(red_znacajki)
-
         return self.pretvori_u_niz(znacajke)
 
     def konvolucija(self, slika: np.ndarray, konvolucijski_filteri: np.ndarray) -> np.ndarray:
@@ -83,10 +81,7 @@ class Konvolucijska_neuronska_mreza:
             else:
                 konvolucijska_mapa = self.trazenje_znacajki(slika, trenutni_filter)
             mapa_znacajki[:, :, broj_filtera] = konvolucijska_mapa
-        return self.relu(mapa_znacajki)
-
-    def relu(self, x: np.ndarray) -> np.ndarray:
-        return x * (x > 0)
+        self.mape_znacajki = relu(mapa_znacajki)
 
     def generiraj_tezinske_faktore(self, ulazni_sloj):
         self.tf_ss = np.random.random((self.skriveni_sloj, ulazni_sloj))
@@ -101,7 +96,9 @@ class Konvolucijska_neuronska_mreza:
     def mse(self, predvidanje: np.ndarray, oznaka: np.ndarray) -> np.ndarray:
         return np.square(predvidanje - oznaka).mean()
 
-    def feedforward(self) -> None:
+    def feedforward(self, ):
+
+    def ff(self) -> None:
         skup_za_ucenje: np.ndarray = self.podaci[:75]
         m: int = len(skup_za_ucenje)
         popis_gubitaka: List[float] = []
@@ -122,7 +119,7 @@ class Konvolucijska_neuronska_mreza:
                 if self.tf_ss is None:
                     self.generiraj_tezinske_faktore(izravnati_niz.shape[0])
 
-                skriveni_sloj = self.relu(np.dot(self.tf_ss, izravnati_niz) + self.o_ss)
+                skriveni_sloj = relu(np.dot(self.tf_ss, izravnati_niz) + self.o_ss)
                 izlazni_sloj = softmax(np.dot(self.tf_is, skriveni_sloj) + self.o_is)
                 gubitak = self.krizna_entropija(izlazni_sloj, oznaka, m)
 
