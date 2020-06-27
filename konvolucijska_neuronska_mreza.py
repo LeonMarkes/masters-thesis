@@ -108,8 +108,9 @@ class Konvolucijska_neuronska_mreza:
                 self.propagiranje_unatrag(izravnati_niz, skriveni_sloj, izlazni_sloj, oznaka, broj_parametara)
         plt.plot(popis_gubitaka)
         plt.show()
-        nauceni_tezinski_faktori_i_odstupanja = [self.tf_ss, self.tf_is, self.o_ss, self.o_is]
-        np.save(naziv_spremljenog_modela + '.npy', nauceni_tezinski_faktori_i_odstupanja)
+        nauceni_tezinski_faktori_i_odstupanja = [self.tf_ss, self.tf_is, self.o_ss, self.o_is, broj_iteracija_konvolucije]
+        self.spremljeni_parametri: str = naziv_spremljenog_modela + '.npy'
+        np.save(self.spremljeni_parametri, nauceni_tezinski_faktori_i_odstupanja)
 
 
     def konvolucijski_sloj(self, parametri: np.ndarray,
@@ -150,7 +151,14 @@ class Konvolucijska_neuronska_mreza:
         self.o_is = self.o_is - self.stopa_ucenja * derivat_odstupanja_izlaznog_sloja
 
 
-
+    def testiranje(self) -> None:
+        skup_za_testiranje: np.ndarray = self.podaci[int(len(self.podaci) * .75):]
+        self.tf_ss, self.tf_is, self.o_ss, self.o_is, broj_iteracija_konvolucije = np.load(self.spremljeni_parametri, allow_pickle=True)
+        brojac: int = 0
+        tocno: int = 0
+        for parametri, oznaka in tqdm(skup_za_testiranje):
+            izravnati_niz: np.ndarray = self.konvolucijski_sloj(parametri, broj_iteracija_konvolucije)
+            skriveni_sloj, izlazni_sloj, gubitak = self.guranje_naprijed(izravnati_niz, oznaka, broj_parametara)
 
 
     def feedforward(self) -> None:
@@ -206,7 +214,7 @@ class Konvolucijska_neuronska_mreza:
         brojac = 0
         tocno = 0
         for parametri, oznaka in tqdm(skup_za_testiranje):
-            oznaka = oznaka.reshape(-1, 1)
+            # oznaka = oznaka.reshape(-1, 1)
             mape_znacajki: np.ndarray = self.konvolucija(parametri, konvolucijski_filteri)
             umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
 
