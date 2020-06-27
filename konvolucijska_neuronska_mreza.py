@@ -95,16 +95,21 @@ class Konvolucijska_neuronska_mreza:
         return np.square(predvidanje - oznaka).mean()
 
     def ucenje(self, broj_iteracija_konvolucije: int,
-               broj_epoha: int) -> None:
-        broj_parametara: int = len(self.podaci)
+               broj_epoha: int,
+               naziv_spremljenog_modela: str) -> None:
         popis_gubitaka: List[float] = []
-        skup_za_ucenje: np.ndarray = self.podaci[:int(broj_parametara * .75)]
+        skup_za_ucenje: np.ndarray = self.podaci[:int(len(self.podaci) * .75)]
+        broj_parametara: int = len(skup_za_ucenje)
         for _ in tqdm(range(broj_epoha)):
             for parametri, oznaka in tqdm(skup_za_ucenje):
                 izravnati_niz: np.ndarray = self.konvolucijski_sloj(parametri, broj_iteracija_konvolucije)
-                izlazni_sloj, gubitak = self.guranje_naprijed(izravnati_niz, oznaka, len(skup_za_ucenje))
+                skriveni_sloj, izlazni_sloj, gubitak = self.guranje_naprijed(izravnati_niz, oznaka, broj_parametara)
                 popis_gubitaka.append(gubitak)
-                self.propagiranje_unatrag(izlazni_sloj, oznaka)
+                self.propagiranje_unatrag(izravnati_niz, skriveni_sloj, izlazni_sloj, oznaka, broj_parametara)
+        plt.plot(popis_gubitaka)
+        plt.show()
+        nauceni_tezinski_faktori_i_odstupanja = [self.tf_ss, self.tf_is, self.o_ss, self.o_is]
+        np.save(naziv_spremljenog_modela + '.npy', nauceni_tezinski_faktori_i_odstupanja)
 
 
     def konvolucijski_sloj(self, parametri: np.ndarray,
@@ -118,13 +123,35 @@ class Konvolucijska_neuronska_mreza:
 
     def guranje_naprijed(self, podaci: np.ndarray,
                          oznaka: np.ndarray,
-                         velicina_skupa: int) -> Tuple[np.ndarray, float]:
+                         velicina_skupa: int) -> Tuple[np.ndarray, np.ndarray, float]:
         if self.tf_ss is None:
             self.generiraj_tezinske_faktore(podaci.shape[0])
         skriveni_sloj: np.ndarray = relu(np.dot(self.tf_ss, podaci) + self.o_ss)
         izlazni_sloj: np.ndarray = softmax(np.dot(self.tf_is, skriveni_sloj) + self.o_is)
         gubitak: float = self.krizna_entropija(izlazni_sloj, oznaka, velicina_skupa)
-        return izlazni_sloj, gubitak
+        return skriveni_sloj, izlazni_sloj, gubitak
+
+    def propagiranje_unatrag(self, podaci: np.ndarray,
+                             skriveni_sloj: np.ndarray,
+                             izlazni_sloj: np.ndarray,
+                             oznaka: np.ndarray,
+                             broj_parametara: int) -> None:
+        derivat_izlaznog_sloja: np.ndarray = izlazni_sloj - oznaka
+        derivat_tf_izlaznog_sloja: np.ndarray = (1 / broj_parametara) * np.dot(derivat_izlaznog_sloja, skriveni_sloj.T)
+        derivat_odstupanja_izlaznog_sloja: np.ndarray = (1 / broj_parametara) * np.sum(derivat_izlaznog_sloja, axis=1, keepdims=True)
+
+        derivat_skrivenog_sloja: np.ndarray = np.multiply(np.dot(self.tf_is.T, derivat_izlaznog_sloja), 1 - np.power(skriveni_sloj, 2))
+        derivat_tf_skrivenog_sloja: np.ndarray = (1 / broj_parametara) * np.dot(derivat_skrivenog_sloja, podaci.T)
+        derivat_odstupanja_skrivenog_sloja: np.ndarray = (1 / broj_parametara) * np.sum(derivat_skrivenog_sloja, axis=1, keepdims=True)
+
+        self.tf_ss = self.tf_ss - self.stopa_ucenja * derivat_tf_skrivenog_sloja
+        self.o_ss = self.o_ss - self.stopa_ucenja * derivat_odstupanja_skrivenog_sloja
+        self.tf_is = self.tf_is - self.stopa_ucenja * derivat_tf_izlaznog_sloja
+        self.o_is = self.o_is - self.stopa_ucenja * derivat_odstupanja_izlaznog_sloja
+
+
+
+
 
     def feedforward(self) -> None:
         skup_za_ucenje: np.ndarray = self.podaci[:75]
