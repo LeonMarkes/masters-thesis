@@ -99,8 +99,22 @@ class Konvolucijska_neuronska_mreza:
         skup_za_ucenje: np.ndarray = self.podaci[:int(broj_parametara * .75)]
         for _ in tqdm(range(broj_epoha)):
             for parametri, oznaka in tqdm(skup_za_ucenje):
-                # self.konvolucija(broj_iteracija_konvolucije)
-                pass
+                izravnati_niz: np.ndarray = self.konvolucijski_sloj(parametri, broj_iteracija_konvolucije)
+                self.guranje_naprijed(izravnati_niz)
+
+
+    def konvolucijski_sloj(self, parametri: np.ndarray, broj_iteracija: int) -> np.ndarray:
+        mapa_znacajki: np.ndarray = None
+        for _ in range(broj_iteracija):
+            mape_znacajki = self.konvolucija(parametri if mapa_znacajki is None else mapa_znacajki, konvolucijski_filteri)
+            umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
+        izravnati_niz = umanjene_mape.reshape(-1, 1)
+        return izravnati_niz / np.linalg.norm(izravnati_niz)
+
+    def guranje_naprijed(self, podaci) -> None:
+        if self.tf_ss is None:
+            self.generiraj_tezinske_faktore(podaci.shape[0])
+
 
     def feedforward(self) -> None:
         skup_za_ucenje: np.ndarray = self.podaci[:75]
