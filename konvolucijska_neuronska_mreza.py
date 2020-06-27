@@ -1,6 +1,6 @@
 import numpy as np
 from kerneli import konvolucijski_filteri, detekcija_ruba, sobel_filteri
-from typing import List
+from typing import List, Tuple
 from util import relu, softmax
 import matplotlib.pyplot as plt
 from tqdm import tqdm
@@ -94,16 +94,21 @@ class Konvolucijska_neuronska_mreza:
     def mse(self, predvidanje: np.ndarray, oznaka: np.ndarray) -> np.ndarray:
         return np.square(predvidanje - oznaka).mean()
 
-    def ucenje(self, broj_iteracija_konvolucije: int, broj_epoha: int) -> None:
+    def ucenje(self, broj_iteracija_konvolucije: int,
+               broj_epoha: int) -> None:
         broj_parametara: int = len(self.podaci)
+        popis_gubitaka: List[float] = []
         skup_za_ucenje: np.ndarray = self.podaci[:int(broj_parametara * .75)]
         for _ in tqdm(range(broj_epoha)):
             for parametri, oznaka in tqdm(skup_za_ucenje):
                 izravnati_niz: np.ndarray = self.konvolucijski_sloj(parametri, broj_iteracija_konvolucije)
-                self.guranje_naprijed(izravnati_niz)
+                izlazni_sloj, gubitak = self.guranje_naprijed(izravnati_niz, oznaka, len(skup_za_ucenje))
+                popis_gubitaka.append(gubitak)
+                self.propagiranje_unatrag(izlazni_sloj, oznaka)
 
 
-    def konvolucijski_sloj(self, parametri: np.ndarray, broj_iteracija: int) -> np.ndarray:
+    def konvolucijski_sloj(self, parametri: np.ndarray,
+                           broj_iteracija: int) -> np.ndarray:
         mapa_znacajki: np.ndarray = None
         for _ in range(broj_iteracija):
             mape_znacajki = self.konvolucija(parametri if mapa_znacajki is None else mapa_znacajki, konvolucijski_filteri)
@@ -111,10 +116,15 @@ class Konvolucijska_neuronska_mreza:
         izravnati_niz = umanjene_mape.reshape(-1, 1)
         return izravnati_niz / np.linalg.norm(izravnati_niz)
 
-    def guranje_naprijed(self, podaci) -> None:
+    def guranje_naprijed(self, podaci: np.ndarray,
+                         oznaka: np.ndarray,
+                         velicina_skupa: int) -> Tuple[np.ndarray, float]:
         if self.tf_ss is None:
             self.generiraj_tezinske_faktore(podaci.shape[0])
-
+        skriveni_sloj: np.ndarray = relu(np.dot(self.tf_ss, podaci) + self.o_ss)
+        izlazni_sloj: np.ndarray = softmax(np.dot(self.tf_is, skriveni_sloj) + self.o_is)
+        gubitak: float = self.krizna_entropija(izlazni_sloj, oznaka, velicina_skupa)
+        return izlazni_sloj, gubitak
 
     def feedforward(self) -> None:
         skup_za_ucenje: np.ndarray = self.podaci[:75]
