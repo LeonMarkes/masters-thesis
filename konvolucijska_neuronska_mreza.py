@@ -4,7 +4,6 @@ from typing import List, Tuple
 from util import relu, softmax
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-import sys
 
 
 class Konvolucijska_neuronska_mreza:
@@ -165,81 +164,3 @@ class Konvolucijska_neuronska_mreza:
                 tocno += 1
             brojac += 1
         print('Točnost modela je: ' + str(round(tocno / brojac, 2) * 100) + '%')
-
-
-
-
-    def feedforward(self) -> None:
-        skup_za_ucenje: np.ndarray = self.podaci[:75]
-        m: int = len(skup_za_ucenje)
-        popis_gubitaka: List[float] = []
-        for _ in tqdm(range(4)):
-            for parametri, oznaka in tqdm(skup_za_ucenje):
-                # oznaka = oznaka.reshape(-1, 1)
-                mape_znacajki: np.ndarray = self.konvolucija(parametri, konvolucijski_filteri)
-                umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
-
-                mape_znacajki: np.ndarray = self.konvolucija(umanjene_mape, konvolucijski_filteri)
-                umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
-
-                mape_znacajki: np.ndarray = self.konvolucija(umanjene_mape, konvolucijski_filteri)
-                umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
-
-                izravnati_niz = umanjene_mape.reshape(-1, 1)
-                izravnati_niz = izravnati_niz / np.linalg.norm(izravnati_niz)
-                if self.tf_ss is None:
-                    self.generiraj_tezinske_faktore(izravnati_niz.shape[0])
-
-                skriveni_sloj = relu(np.dot(self.tf_ss, izravnati_niz) + self.o_ss)
-                izlazni_sloj = softmax(np.dot(self.tf_is, skriveni_sloj) + self.o_is)
-                gubitak = self.krizna_entropija(izlazni_sloj, oznaka, m)
-
-                # print(gubitak)
-                popis_gubitaka.append(gubitak)
-
-                dZ2 = izlazni_sloj - oznaka
-                dW2 = (1 / m) * np.dot(dZ2, skriveni_sloj.T)
-                db2 = (1 / m) * np.sum(dZ2, axis=1, keepdims=True)
-                dZ1 = np.multiply(np.dot(self.tf_is.T, dZ2), 1 - np.power(skriveni_sloj, 2))
-                dW1 = (1 / m) * np.dot(dZ1, izravnati_niz.T)
-                db1 = (1 / m) * np.sum(dZ1, axis=1, keepdims=True)
-                # print()
-                self.tf_ss = self.tf_ss - self.stopa_ucenja * dW1
-                self.o_ss = self.o_ss - self.stopa_ucenja * db1
-                self.tf_is = self.tf_is - self.stopa_ucenja * dW2
-                self.o_is = self.o_is - self.stopa_ucenja * db2
-
-        plt.plot(popis_gubitaka)
-        plt.show()
-        tf_i_o = [self.tf_ss, self.tf_is, self.o_ss, self.o_is]
-        np.save('350_25_3k.npy', tf_i_o)
-
-
-
-    def test_ff(self):
-        skup_za_testiranje: np.ndarray = self.podaci[75:]
-        self.tf_ss, self.tf_is, self.o_ss, self.o_is = np.load('350_25_3k.npy', allow_pickle=True)
-        brojac = 0
-        tocno = 0
-        for parametri, oznaka in tqdm(skup_za_testiranje):
-            # oznaka = oznaka.reshape(-1, 1)
-            mape_znacajki: np.ndarray = self.konvolucija(parametri, konvolucijski_filteri)
-            umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
-
-            mape_znacajki: np.ndarray = self.konvolucija(umanjene_mape, konvolucijski_filteri)
-            umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
-
-            mape_znacajki: np.ndarray = self.konvolucija(umanjene_mape, konvolucijski_filteri)
-            umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
-
-            izravnati_niz = umanjene_mape.reshape(-1, 1)
-            izravnati_niz = izravnati_niz / np.linalg.norm(izravnati_niz)
-
-            skriveni_sloj = relu(np.dot(self.tf_ss, izravnati_niz) + self.o_ss)
-            izlazni_sloj = softmax(np.dot(self.tf_is, skriveni_sloj) + self.o_is)
-            print(izlazni_sloj, oznaka)
-            pozicija = np.where(oznaka == 1.)[0][0]
-            if izlazni_sloj[pozicija] > .5:
-                tocno += 1
-            brojac += 1
-        print('Točnost modela je:', str(tocno / brojac))
