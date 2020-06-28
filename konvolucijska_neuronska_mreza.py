@@ -156,9 +156,17 @@ class Konvolucijska_neuronska_mreza:
         self.tf_ss, self.tf_is, self.o_ss, self.o_is, broj_iteracija_konvolucije = np.load(self.spremljeni_parametri, allow_pickle=True)
         brojac: int = 0
         tocno: int = 0
+        broj_parametara: int = len(skup_za_testiranje)
         for parametri, oznaka in tqdm(skup_za_testiranje):
             izravnati_niz: np.ndarray = self.konvolucijski_sloj(parametri, broj_iteracija_konvolucije)
-            skriveni_sloj, izlazni_sloj, gubitak = self.guranje_naprijed(izravnati_niz, oznaka, broj_parametara)
+            _, izlazni_sloj, _ = self.guranje_naprijed(izravnati_niz, oznaka, broj_parametara)
+            pozicija = np.where(oznaka == 1.)[0][0]
+            if izlazni_sloj[pozicija] > .5:
+                tocno += 1
+            brojac += 1
+        print('Točnost modela je: ' + str(round(tocno / brojac, 2) * 100) + '%')
+
+
 
 
     def feedforward(self) -> None:
