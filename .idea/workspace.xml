@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9d8037fd-1574-4c32-859b-11d93fb91b08" name="Default Changelist" comment="">
+    <list default="true" id="9d8037fd-1574-4c32-859b-11d93fb91b08" name="Default Changelist" comment="Changed image size">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/izrada_podatkovnih_skupova.py" beforeDir="false" afterPath="$PROJECT_DIR$/izrada_podatkovnih_skupova.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kerneli.py" beforeDir="false" afterPath="$PROJECT_DIR$/kerneli.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/konvolucijska_neuronska_mreza.py" beforeDir="false" afterPath="$PROJECT_DIR$/konvolucijska_neuronska_mreza.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run.py" beforeDir="false" afterPath="$PROJECT_DIR$/run.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -179,6 +180,9 @@
       <module name="masters-thesis" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -253,7 +257,15 @@
       <workItem from="1592392743401" duration="11102000" />
       <workItem from="1592491840231" duration="13601000" />
       <workItem from="1592553492314" duration="11417000" />
-      <workItem from="1592649655603" duration="28214000" />
+      <workItem from="1592649655603" duration="31888000" />
+      <workItem from="1592845198758" duration="2124000" />
+      <workItem from="1593010214722" duration="844000" />
+      <workItem from="1593012141831" duration="1705000" />
+      <workItem from="1593014598238" duration="422000" />
+      <workItem from="1593015152443" duration="1201000" />
+      <workItem from="1593029562546" duration="1847000" />
+      <workItem from="1593271313534" duration="7524000" />
+      <workItem from="1593449316809" duration="2907000" />
     </task>
     <task id="LOCAL-00001" summary="Finished dataset maker">
       <created>1591296034395</created>
@@ -283,7 +295,14 @@
       <option name="project" value="LOCAL" />
       <updated>1591650251865</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Changed image size">
+      <created>1592758003513</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1592758003513</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -294,7 +313,8 @@
     <MESSAGE value="Started reworking CNN" />
     <MESSAGE value="Finished feed forward" />
     <MESSAGE value="Adding gradient descent" />
-    <option name="LAST_COMMIT_MESSAGE" value="Adding gradient descent" />
+    <MESSAGE value="Changed image size" />
+    <option name="LAST_COMMIT_MESSAGE" value="Changed image size" />
   </component>
   <component name="WindowStateProjectService">
     <state x="361" y="71" key="#Notifications" timestamp="1592491860982">
@@ -305,10 +325,10 @@
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="523" y="215" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1536.824@0.0.1536.824" timestamp="1591286870897" />
-    <state x="449" y="149" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog" timestamp="1588176235832">
+    <state x="449" y="149" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog" timestamp="1593014960146">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="449" y="149" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/0.0.1536.824@0.0.1536.824" timestamp="1588176235832" />
+    <state x="449" y="149" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/0.0.1536.824@0.0.1536.824" timestamp="1593014960146" />
     <state x="499" y="159" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1590952687872">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
@@ -317,46 +337,46 @@
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="496" y="40" key="#sloj/0.0.1536.824@0.0.1536.824" timestamp="1587295293115" />
-    <state x="393" y="7" key="CommitChangelistDialog2" timestamp="1591650250960">
+    <state x="393" y="7" key="CommitChangelistDialog2" timestamp="1592758016559">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="393" y="7" key="CommitChangelistDialog2/0.0.1536.824@0.0.1536.824" timestamp="1591650250960" />
+    <state x="393" y="7" key="CommitChangelistDialog2/0.0.1536.824@0.0.1536.824" timestamp="1592758016559" />
     <state x="548" y="155" key="FileChooserDialogImpl" timestamp="1588244741736">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="548" y="155" key="FileChooserDialogImpl/0.0.1536.824@0.0.1536.824" timestamp="1588244741736" />
-    <state width="1493" height="261" key="GridCell.Tab.0.bottom" timestamp="1592254163101">
+    <state width="1493" height="261" key="GridCell.Tab.0.bottom" timestamp="1593015020614">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="261" key="GridCell.Tab.0.bottom/0.0.1536.824@0.0.1536.824" timestamp="1592254163101" />
-    <state width="1493" height="261" key="GridCell.Tab.0.center" timestamp="1592254163101">
+    <state width="1493" height="261" key="GridCell.Tab.0.bottom/0.0.1536.824@0.0.1536.824" timestamp="1593015020614" />
+    <state width="1493" height="261" key="GridCell.Tab.0.center" timestamp="1593015020614">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="261" key="GridCell.Tab.0.center/0.0.1536.824@0.0.1536.824" timestamp="1592254163101" />
-    <state width="1493" height="261" key="GridCell.Tab.0.left" timestamp="1592254163101">
+    <state width="1493" height="261" key="GridCell.Tab.0.center/0.0.1536.824@0.0.1536.824" timestamp="1593015020614" />
+    <state width="1493" height="261" key="GridCell.Tab.0.left" timestamp="1593015020614">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="261" key="GridCell.Tab.0.left/0.0.1536.824@0.0.1536.824" timestamp="1592254163101" />
-    <state width="1493" height="261" key="GridCell.Tab.0.right" timestamp="1592254163101">
+    <state width="1493" height="261" key="GridCell.Tab.0.left/0.0.1536.824@0.0.1536.824" timestamp="1593015020614" />
+    <state width="1493" height="261" key="GridCell.Tab.0.right" timestamp="1593015020614">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="261" key="GridCell.Tab.0.right/0.0.1536.824@0.0.1536.824" timestamp="1592254163101" />
-    <state width="1493" height="261" key="GridCell.Tab.1.bottom" timestamp="1592254163101">
+    <state width="1493" height="261" key="GridCell.Tab.0.right/0.0.1536.824@0.0.1536.824" timestamp="1593015020614" />
+    <state width="1493" height="261" key="GridCell.Tab.1.bottom" timestamp="1593015020614">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="261" key="GridCell.Tab.1.bottom/0.0.1536.824@0.0.1536.824" timestamp="1592254163101" />
-    <state width="1493" height="261" key="GridCell.Tab.1.center" timestamp="1592254163101">
+    <state width="1493" height="261" key="GridCell.Tab.1.bottom/0.0.1536.824@0.0.1536.824" timestamp="1593015020614" />
+    <state width="1493" height="261" key="GridCell.Tab.1.center" timestamp="1593015020614">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="261" key="GridCell.Tab.1.center/0.0.1536.824@0.0.1536.824" timestamp="1592254163101" />
-    <state width="1493" height="261" key="GridCell.Tab.1.left" timestamp="1592254163101">
+    <state width="1493" height="261" key="GridCell.Tab.1.center/0.0.1536.824@0.0.1536.824" timestamp="1593015020614" />
+    <state width="1493" height="261" key="GridCell.Tab.1.left" timestamp="1593015020614">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="261" key="GridCell.Tab.1.left/0.0.1536.824@0.0.1536.824" timestamp="1592254163101" />
-    <state width="1493" height="261" key="GridCell.Tab.1.right" timestamp="1592254163101">
+    <state width="1493" height="261" key="GridCell.Tab.1.left/0.0.1536.824@0.0.1536.824" timestamp="1593015020614" />
+    <state width="1493" height="261" key="GridCell.Tab.1.right" timestamp="1593015020614">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="261" key="GridCell.Tab.1.right/0.0.1536.824@0.0.1536.824" timestamp="1592254163101" />
+    <state width="1493" height="261" key="GridCell.Tab.1.right/0.0.1536.824@0.0.1536.824" timestamp="1593015020614" />
     <state x="277" y="56" key="SettingsEditor" timestamp="1592492790716">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
@@ -365,11 +385,11 @@
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="361" y="145" key="Vcs.Push.Dialog.v2/0.0.1536.824@0.0.1536.824" timestamp="1591650258016" />
-    <state x="465" y="238" key="com.intellij.ide.util.TipDialog" timestamp="1592649655705">
+    <state x="465" y="238" key="com.intellij.ide.util.TipDialog" timestamp="1593509018923">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="465" y="238" key="com.intellij.ide.util.TipDialog/0.0.1536.824/1920.0.1920.1040@0.0.1536.824" timestamp="1592649655705" />
-    <state x="465" y="238" key="com.intellij.ide.util.TipDialog/0.0.1536.824@0.0.1536.824" timestamp="1592553506165" />
+    <state x="465" y="238" key="com.intellij.ide.util.TipDialog/0.0.1536.824@0.0.1536.824" timestamp="1593509018923" />
     <state x="510" y="56" key="refactoring.ChangeSignatureDialog" timestamp="1592252195533">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
@@ -381,13 +401,6 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/util.py</url>
-          <line>18</line>
-          <option name="timeStamp" value="15" />
-        </line-breakpoint>
-      </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
           <properties notifyOnTerminate="true" exception="BaseException">
@@ -400,7 +413,7 @@
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/masters_thesis$konvolucijska_neuronska_mreza.coverage" NAME="konvolucijska_neuronska_mreza Coverage Results" MODIFIED="1589627319097" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/masters_thesis$izrada_podatkovnih_skupova.coverage" NAME="izrada_podatkovnih_skupova Coverage Results" MODIFIED="1591294739806" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/masters_thesis$run.coverage" NAME="run Coverage Results" MODIFIED="1592250426897" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/masters_thesis$run.coverage" NAME="run Coverage Results" MODIFIED="1593014713273" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/masters_thesis$Unittests_in_testovi_py.coverage" NAME="Unittests in testovi.py Coverage Results" MODIFIED="1585396676328" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/masters_thesis$Unittests_for_testovi_MyTestCase.coverage" NAME="Unittests for testovi.MyTestCase Coverage Results" MODIFIED="1587322841483" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/masters_thesis$Unittests_for_testovi_MyTestCase_test_neuron.coverage" NAME="Unittests for testovi.MyTestCase.test_neuron Coverage Results" MODIFIED="1587322910632" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

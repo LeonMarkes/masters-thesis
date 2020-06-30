@@ -104,7 +104,7 @@ class Konvolucijska_neuronska_mreza:
                 izravnati_niz: np.ndarray = self.konvolucijski_sloj(parametri, broj_iteracija_konvolucije)
                 skriveni_sloj, izlazni_sloj, gubitak = self.guranje_naprijed(izravnati_niz, oznaka, broj_parametara)
                 popis_gubitaka.append(gubitak)
-                self.propagiranje_unatrag(izravnati_niz, skriveni_sloj, izlazni_sloj, oznaka, broj_parametara)
+                self.propagiranje_unazad(izravnati_niz, skriveni_sloj, izlazni_sloj, oznaka, broj_parametara)
         plt.plot(popis_gubitaka)
         plt.show()
         nauceni_tezinski_faktori_i_odstupanja = [self.tf_ss, self.tf_is, self.o_ss, self.o_is, broj_iteracija_konvolucije]
@@ -131,7 +131,7 @@ class Konvolucijska_neuronska_mreza:
         gubitak: float = self.krizna_entropija(izlazni_sloj, oznaka, velicina_skupa)
         return skriveni_sloj, izlazni_sloj, gubitak
 
-    def propagiranje_unatrag(self, podaci: np.ndarray,
+    def propagiranje_unazad(self, podaci: np.ndarray,
                              skriveni_sloj: np.ndarray,
                              izlazni_sloj: np.ndarray,
                              oznaka: np.ndarray,
@@ -158,6 +158,22 @@ class Konvolucijska_neuronska_mreza:
         broj_parametara: int = len(skup_za_testiranje)
         for parametri, oznaka in tqdm(skup_za_testiranje):
             izravnati_niz: np.ndarray = self.konvolucijski_sloj(parametri, broj_iteracija_konvolucije)
+            _, izlazni_sloj, _ = self.guranje_naprijed(izravnati_niz, oznaka, broj_parametara)
+            pozicija = np.where(oznaka == 1.)[0][0]
+            if izlazni_sloj[pozicija] > .5:
+                tocno += 1
+            brojac += 1
+        print('Točnost modela je: ' + str(round(tocno / brojac, 2) * 100) + '%')
+
+
+    def test(self, skup_za_testiranje, spremljeni_parametri):
+        self.tf_ss, self.tf_is, self.o_ss, self.o_is = np.load(spremljeni_parametri,
+                                                                                           allow_pickle=True)
+        brojac: int = 0
+        tocno: int = 0
+        broj_parametara: int = len(skup_za_testiranje)
+        for parametri, oznaka in tqdm(skup_za_testiranje):
+            izravnati_niz: np.ndarray = self.konvolucijski_sloj(parametri, 3)
             _, izlazni_sloj, _ = self.guranje_naprijed(izravnati_niz, oznaka, broj_parametara)
             pozicija = np.where(oznaka == 1.)[0][0]
             if izlazni_sloj[pozicija] > .5:

@@ -34,8 +34,20 @@ konvolucijski_filteri[1, :, :] = np.array([[[1, 1, 1],
                                             [0, 0, 0],
                                             [-1, -1, -1]]])
 
-detekcija_ruba = np.zeros((1, 3, 3))
+detekcija_ruba = np.zeros((2, 3, 3))
 
 detekcija_ruba[0, :, :] = np.array([[[-1, -1, -1],
                                      [-1, 8, -1],
                                      [-1, -1, -1]]])
+
+
+
+sobel_filteri = np.zeros((2, 3, 3))
+
+sobel_filteri[0, :, :] = np.array([[[1, 0, -1],
+                                    [2, 0, -2],
+                                    [1, 0, -1]]])
+
+sobel_filteri[1, :, :] = np.array([[[1, 2, 1],
+                                    [0, 0, 0],
+                                    [-1, -2, -1]]])
