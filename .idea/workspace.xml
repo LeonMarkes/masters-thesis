@@ -3,10 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="9d8037fd-1574-4c32-859b-11d93fb91b08" name="Default Changelist" comment="Changed image size">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/izrada_podatkovnih_skupova.py" beforeDir="false" afterPath="$PROJECT_DIR$/izrada_podatkovnih_skupova.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kerneli.py" beforeDir="false" afterPath="$PROJECT_DIR$/kerneli.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/konvolucijska_neuronska_mreza.py" beforeDir="false" afterPath="$PROJECT_DIR$/konvolucijska_neuronska_mreza.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run.py" beforeDir="false" afterPath="$PROJECT_DIR$/run.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -180,9 +176,6 @@
       <module name="masters-thesis" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -266,6 +259,7 @@
       <workItem from="1593029562546" duration="1847000" />
       <workItem from="1593271313534" duration="7524000" />
       <workItem from="1593449316809" duration="2907000" />
+      <workItem from="1594484653233" duration="3247000" />
     </task>
     <task id="LOCAL-00001" summary="Finished dataset maker">
       <created>1591296034395</created>
