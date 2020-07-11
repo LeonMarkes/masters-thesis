@@ -1,10 +1,9 @@
 import numpy as np
 from kerneli import konvolucijski_filteri, detekcija_ruba, sobel_filteri
-from typing import List
+from typing import List, Tuple
 from util import relu, softmax
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-import sys
 
 
 class Konvolucijska_neuronska_mreza:
@@ -52,8 +51,6 @@ class Konvolucijska_neuronska_mreza:
 
     def trazenje_znacajki(self, slika: np.ndarray, filter: np.ndarray) -> np.ndarray:
         znacajke: List[List[List[float]]] = []
-        if len(slika.shape) > 2:
-            print(slika.shape)
         for i in range(1, slika.shape[0] - 1):
             red_znacajki: List[float] = []
             for j in range(1, slika.shape[1] - 1):
@@ -63,10 +60,8 @@ class Konvolucijska_neuronska_mreza:
                     [slika[i + 1][j - 1], slika[i + 1][j], slika[i + 1][j + 1]]
                 ])
                 znacajka: float = self.primjeni_kernel(tri_x_tri, filter)
-
                 red_znacajki.append(znacajka)
             znacajke.append(red_znacajki)
-
         return self.pretvori_u_niz(znacajke)
 
     def konvolucija(self, slika: np.ndarray, konvolucijski_filteri: np.ndarray) -> np.ndarray:
@@ -83,10 +78,7 @@ class Konvolucijska_neuronska_mreza:
             else:
                 konvolucijska_mapa = self.trazenje_znacajki(slika, trenutni_filter)
             mapa_znacajki[:, :, broj_filtera] = konvolucijska_mapa
-        return self.relu(mapa_znacajki)
-
-    def relu(self, x: np.ndarray) -> np.ndarray:
-        return x * (x > 0)
+        return relu(mapa_znacajki)
 
     def generiraj_tezinske_faktore(self, ulazni_sloj):
         self.tf_ss = np.random.random((self.skriveni_sloj, ulazni_sloj))
@@ -101,77 +93,90 @@ class Konvolucijska_neuronska_mreza:
     def mse(self, predvidanje: np.ndarray, oznaka: np.ndarray) -> np.ndarray:
         return np.square(predvidanje - oznaka).mean()
 
-    def feedforward(self) -> None:
-        skup_za_ucenje: np.ndarray = self.podaci[:75]
-        m: int = len(skup_za_ucenje)
+    def ucenje(self, broj_iteracija_konvolucije: int,
+               broj_epoha: int,
+               naziv_spremljenog_modela: str) -> None:
         popis_gubitaka: List[float] = []
-        for _ in tqdm(range(4)):
+        skup_za_ucenje: np.ndarray = self.podaci[:int(len(self.podaci) * .75)]
+        broj_parametara: int = len(skup_za_ucenje)
+        for _ in tqdm(range(broj_epoha)):
             for parametri, oznaka in tqdm(skup_za_ucenje):
-                oznaka = oznaka.reshape(-1, 1)
-                mape_znacajki: np.ndarray = self.konvolucija(parametri, konvolucijski_filteri)
-                umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
-
-                mape_znacajki: np.ndarray = self.konvolucija(umanjene_mape, konvolucijski_filteri)
-                umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
-
-                mape_znacajki: np.ndarray = self.konvolucija(umanjene_mape, konvolucijski_filteri)
-                umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
-
-                izravnati_niz = umanjene_mape.reshape(-1, 1)
-                izravnati_niz = izravnati_niz / np.linalg.norm(izravnati_niz)
-                if self.tf_ss is None:
-                    self.generiraj_tezinske_faktore(izravnati_niz.shape[0])
-
-                skriveni_sloj = self.relu(np.dot(self.tf_ss, izravnati_niz) + self.o_ss)
-                izlazni_sloj = softmax(np.dot(self.tf_is, skriveni_sloj) + self.o_is)
-                gubitak = self.krizna_entropija(izlazni_sloj, oznaka, m)
-
-                # print(gubitak)
+                izravnati_niz: np.ndarray = self.konvolucijski_sloj(parametri, broj_iteracija_konvolucije)
+                skriveni_sloj, izlazni_sloj, gubitak = self.guranje_naprijed(izravnati_niz, oznaka, broj_parametara)
                 popis_gubitaka.append(gubitak)
-
-                dZ2 = izlazni_sloj - oznaka
-                dW2 = (1 / m) * np.dot(dZ2, skriveni_sloj.T)
-                db2 = (1 / m) * np.sum(dZ2, axis=1, keepdims=True)
-                dZ1 = np.multiply(np.dot(self.tf_is.T, dZ2), 1 - np.power(skriveni_sloj, 2))
-                dW1 = (1 / m) * np.dot(dZ1, izravnati_niz.T)
-                db1 = (1 / m) * np.sum(dZ1, axis=1, keepdims=True)
-                # print()
-                self.tf_ss = self.tf_ss - self.stopa_ucenja * dW1
-                self.o_ss = self.o_ss - self.stopa_ucenja * db1
-                self.tf_is = self.tf_is - self.stopa_ucenja * dW2
-                self.o_is = self.o_is - self.stopa_ucenja * db2
-
+                self.propagiranje_unazad(izravnati_niz, skriveni_sloj, izlazni_sloj, oznaka, broj_parametara)
         plt.plot(popis_gubitaka)
         plt.show()
-        tf_i_o = [self.tf_ss, self.tf_is, self.o_ss, self.o_is]
-        np.save('350_25_3k.npy', tf_i_o)
+        nauceni_tezinski_faktori_i_odstupanja = [self.tf_ss, self.tf_is, self.o_ss, self.o_is, broj_iteracija_konvolucije]
+        self.spremljeni_parametri: str = naziv_spremljenog_modela + '.npy'
+        np.save(self.spremljeni_parametri, nauceni_tezinski_faktori_i_odstupanja)
 
 
+    def konvolucijski_sloj(self, parametri: np.ndarray,
+                           broj_iteracija: int) -> np.ndarray:
+        mape_znacajki: np.ndarray = None
+        for _ in range(broj_iteracija):
+            mape_znacajki = self.konvolucija(parametri if mape_znacajki is None else umanjene_mape, konvolucijski_filteri)
+            umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
+        izravnati_niz = umanjene_mape.reshape(-1, 1)
+        return izravnati_niz / np.linalg.norm(izravnati_niz)
 
-    def test_ff(self):
-        skup_za_testiranje: np.ndarray = self.podaci[75:]
-        self.tf_ss, self.tf_is, self.o_ss, self.o_is = np.load('350_25_3k.npy', allow_pickle=True)
-        brojac = 0
-        tocno = 0
+    def guranje_naprijed(self, podaci: np.ndarray,
+                         oznaka: np.ndarray,
+                         velicina_skupa: int) -> Tuple[np.ndarray, np.ndarray, float]:
+        if self.tf_ss is None:
+            self.generiraj_tezinske_faktore(podaci.shape[0])
+        skriveni_sloj: np.ndarray = relu(np.dot(self.tf_ss, podaci) + self.o_ss)
+        izlazni_sloj: np.ndarray = softmax(np.dot(self.tf_is, skriveni_sloj) + self.o_is)
+        gubitak: float = self.krizna_entropija(izlazni_sloj, oznaka, velicina_skupa)
+        return skriveni_sloj, izlazni_sloj, gubitak
+
+    def propagiranje_unazad(self, podaci: np.ndarray,
+                             skriveni_sloj: np.ndarray,
+                             izlazni_sloj: np.ndarray,
+                             oznaka: np.ndarray,
+                             broj_parametara: int) -> None:
+        derivat_izlaznog_sloja: np.ndarray = izlazni_sloj - oznaka
+        derivat_tf_izlaznog_sloja: np.ndarray = (1 / broj_parametara) * np.dot(derivat_izlaznog_sloja, skriveni_sloj.T)
+        derivat_odstupanja_izlaznog_sloja: np.ndarray = (1 / broj_parametara) * np.sum(derivat_izlaznog_sloja, axis=1, keepdims=True)
+
+        derivat_skrivenog_sloja: np.ndarray = np.multiply(np.dot(self.tf_is.T, derivat_izlaznog_sloja), 1 - np.power(skriveni_sloj, 2))
+        derivat_tf_skrivenog_sloja: np.ndarray = (1 / broj_parametara) * np.dot(derivat_skrivenog_sloja, podaci.T)
+        derivat_odstupanja_skrivenog_sloja: np.ndarray = (1 / broj_parametara) * np.sum(derivat_skrivenog_sloja, axis=1, keepdims=True)
+
+        self.tf_ss = self.tf_ss - self.stopa_ucenja * derivat_tf_skrivenog_sloja
+        self.o_ss = self.o_ss - self.stopa_ucenja * derivat_odstupanja_skrivenog_sloja
+        self.tf_is = self.tf_is - self.stopa_ucenja * derivat_tf_izlaznog_sloja
+        self.o_is = self.o_is - self.stopa_ucenja * derivat_odstupanja_izlaznog_sloja
+
+
+    def testiranje(self) -> None:
+        skup_za_testiranje: np.ndarray = self.podaci[int(len(self.podaci) * .75):]
+        self.tf_ss, self.tf_is, self.o_ss, self.o_is = np.load('350_25_3k2.npy', allow_pickle=True)
+        brojac: int = 0
+        tocno: int = 0
+        broj_parametara: int = len(skup_za_testiranje)
         for parametri, oznaka in tqdm(skup_za_testiranje):
-            oznaka = oznaka.reshape(-1, 1)
-            mape_znacajki: np.ndarray = self.konvolucija(parametri, konvolucijski_filteri)
-            umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
-
-            mape_znacajki: np.ndarray = self.konvolucija(umanjene_mape, konvolucijski_filteri)
-            umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
-
-            mape_znacajki: np.ndarray = self.konvolucija(umanjene_mape, konvolucijski_filteri)
-            umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
-
-            izravnati_niz = umanjene_mape.reshape(-1, 1)
-            izravnati_niz = izravnati_niz / np.linalg.norm(izravnati_niz)
-
-            skriveni_sloj = self.relu(np.dot(self.tf_ss, izravnati_niz) + self.o_ss)
-            izlazni_sloj = softmax(np.dot(self.tf_is, skriveni_sloj) + self.o_is)
-            print(izlazni_sloj, oznaka)
+            izravnati_niz: np.ndarray = self.konvolucijski_sloj(parametri, 2)
+            _, izlazni_sloj, _ = self.guranje_naprijed(izravnati_niz, oznaka, broj_parametara)
             pozicija = np.where(oznaka == 1.)[0][0]
             if izlazni_sloj[pozicija] > .5:
                 tocno += 1
             brojac += 1
-        print('Točnost modela je:', str(tocno / brojac))
+        print('Točnost modela je: ' + str(round(tocno / brojac, 2) * 100) + '%')
+
+
+    def test(self, skup_za_testiranje, spremljeni_parametri):
+        self.tf_ss, self.tf_is, self.o_ss, self.o_is = np.load(spremljeni_parametri,
+                                                                                           allow_pickle=True)
+        brojac: int = 0
+        tocno: int = 0
+        broj_parametara: int = len(skup_za_testiranje)
+        for parametri, oznaka in tqdm(skup_za_testiranje):
+            izravnati_niz: np.ndarray = self.konvolucijski_sloj(parametri, 2)
+            _, izlazni_sloj, _ = self.guranje_naprijed(izravnati_niz, oznaka, broj_parametara)
+            pozicija = np.where(oznaka == 1.)[0][0]
+            if izlazni_sloj[pozicija] > .5:
+                tocno += 1
+            brojac += 1
+        print('Točnost modela je: ' + str(round(tocno / brojac, 2) * 100) + '%')

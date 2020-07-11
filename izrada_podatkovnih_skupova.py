@@ -11,24 +11,20 @@ import os
 import cv2
 
 
-def oznaci_sliku(naziv_datoteke: str) -> Tuple[List[float], int]:  # prolazi kroz datoteku i kreira matricu identiteta čija
-    #  veličina ovisi o broju jedinstevih slika/životinja u njoj
+def oznaci_sliku(naziv_datoteke: str) -> Tuple[List[float], int]:
     jedinstvene_vrijednosti: List[str] = []
-    for slika in os.listdir(naziv_datoteke):  # provjeri jedinstven broj životinja
+    for slika in os.listdir(naziv_datoteke):
         naziv_slike: str = slika.split('.')[0]
         if naziv_slike not in jedinstvene_vrijednosti:
             jedinstvene_vrijednosti.append(naziv_slike)
-
     oznake_podataka: List[List[float]] = []
     oznake: List[List[float]] = np.eye(len(jedinstvene_vrijednosti)).tolist()
     for slika in os.listdir(naziv_datoteke):
         naziv_slike: str = slika.split('.')[0]
         pozicija: int = jedinstvene_vrijednosti.index(naziv_slike)
         oznake_podataka.append(oznake[pozicija])
-
     for vrijednost in jedinstvene_vrijednosti:
-        print(vrijednost + ' je označena s ' + str(oznake[jedinstvene_vrijednosti.index(vrijednost)]))
-
+        print(vrijednost + ' je označen s ' + str(oznake[jedinstvene_vrijednosti.index(vrijednost)]))
     return oznake_podataka, len(jedinstvene_vrijednosti)
 
 
@@ -48,7 +44,7 @@ def kreiraj_podatkovni_skup(naziv_datoteke: str = 'podatkovni_skup') -> Tuple[Li
     oznake: Tuple[List[float], int] = oznaci_sliku(naziv_datoteke)
     slike = dohvati_i_uredi_slike(naziv_datoteke)
     for slika, oznaka in zip(slike, oznake[0]):
-        podatkovni_skup.append([np.array(slika), np.array(oznaka)])
+        podatkovni_skup.append([np.array(slika), np.array(oznaka).reshape(-1, 1)])
     np.random.shuffle(podatkovni_skup)
     np.save('podatkovni_skup.npy', podatkovni_skup)
     return podatkovni_skup, oznake[1]
