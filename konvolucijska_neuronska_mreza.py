@@ -114,9 +114,9 @@ class Konvolucijska_neuronska_mreza:
 
     def konvolucijski_sloj(self, parametri: np.ndarray,
                            broj_iteracija: int) -> np.ndarray:
-        mapa_znacajki: np.ndarray = None
+        mape_znacajki: np.ndarray = None
         for _ in range(broj_iteracija):
-            mape_znacajki = self.konvolucija(parametri if mapa_znacajki is None else mapa_znacajki, konvolucijski_filteri)
+            mape_znacajki = self.konvolucija(parametri if mape_znacajki is None else umanjene_mape, konvolucijski_filteri)
             umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
         izravnati_niz = umanjene_mape.reshape(-1, 1)
         return izravnati_niz / np.linalg.norm(izravnati_niz)
@@ -152,12 +152,12 @@ class Konvolucijska_neuronska_mreza:
 
     def testiranje(self) -> None:
         skup_za_testiranje: np.ndarray = self.podaci[int(len(self.podaci) * .75):]
-        self.tf_ss, self.tf_is, self.o_ss, self.o_is, broj_iteracija_konvolucije = np.load(self.spremljeni_parametri, allow_pickle=True)
+        self.tf_ss, self.tf_is, self.o_ss, self.o_is = np.load('350_25_3k2.npy', allow_pickle=True)
         brojac: int = 0
         tocno: int = 0
         broj_parametara: int = len(skup_za_testiranje)
         for parametri, oznaka in tqdm(skup_za_testiranje):
-            izravnati_niz: np.ndarray = self.konvolucijski_sloj(parametri, broj_iteracija_konvolucije)
+            izravnati_niz: np.ndarray = self.konvolucijski_sloj(parametri, 2)
             _, izlazni_sloj, _ = self.guranje_naprijed(izravnati_niz, oznaka, broj_parametara)
             pozicija = np.where(oznaka == 1.)[0][0]
             if izlazni_sloj[pozicija] > .5:
@@ -173,7 +173,7 @@ class Konvolucijska_neuronska_mreza:
         tocno: int = 0
         broj_parametara: int = len(skup_za_testiranje)
         for parametri, oznaka in tqdm(skup_za_testiranje):
-            izravnati_niz: np.ndarray = self.konvolucijski_sloj(parametri, 3)
+            izravnati_niz: np.ndarray = self.konvolucijski_sloj(parametri, 2)
             _, izlazni_sloj, _ = self.guranje_naprijed(izravnati_niz, oznaka, broj_parametara)
             pozicija = np.where(oznaka == 1.)[0][0]
             if izlazni_sloj[pozicija] > .5:
