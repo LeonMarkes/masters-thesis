@@ -110,8 +110,7 @@ class Konvolucijska_neuronska_mreza:
         return - np.sum(logprobs) / m
 
     def ucenje(self, broj_iteracija_konvolucije: int,
-               broj_epoha: int,
-               naziv_spremljenog_modela: str) -> None:
+               broj_epoha: int) -> None:
         popis_gubitaka: List[float] = []
         skup_za_ucenje: np.ndarray = self.podaci[:int(len(self.podaci) * .75)]
         broj_parametara: int = len(skup_za_ucenje)
@@ -124,7 +123,6 @@ class Konvolucijska_neuronska_mreza:
         plt.plot(popis_gubitaka)
         plt.show()
         nauceni_tezinski_faktori_i_odstupanja = [self.tf_ss, self.tf_is, self.o_ss, self.o_is, broj_iteracija_konvolucije]
-        self.spremljeni_parametri: str = naziv_spremljenog_modela + '.npy'
         np.save(self.spremljeni_parametri, nauceni_tezinski_faktori_i_odstupanja)
 
 
