@@ -1,10 +1,10 @@
 import numpy as np
-from kerneli import konvolucijski_filteri, detekcija_ruba, sobel_filteri
+from kerneli import konvolucijski_filteri
 from typing import List, Tuple
 from util import relu, softmax
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-from PIL import Image
+
 
 
 class Konvolucijska_neuronska_mreza:
@@ -13,7 +13,8 @@ class Konvolucijska_neuronska_mreza:
                  podaci: List[np.ndarray],
                  skriveni_sloj: int,
                  izlazni_sloj: int,
-                 stopa_ucenja: float) -> None:
+                 stopa_ucenja: float,
+                 spremljeni_parametri) -> None:
         self.podaci: List[np.ndarray] = podaci
         self.skriveni_sloj = skriveni_sloj
         self.izlazni_sloj = izlazni_sloj
@@ -22,6 +23,7 @@ class Konvolucijska_neuronska_mreza:
         self.o_ss = None
         self.o_is = None
         self.stopa_ucenja = stopa_ucenja
+        self.spremljeni_parametri = spremljeni_parametri
 
     def pretvori_u_niz(self, vrijednost) -> np.ndarray:
         return np.asarray(vrijednost, dtype=float)
@@ -107,9 +109,6 @@ class Konvolucijska_neuronska_mreza:
         logprobs = np.multiply(oznaka, np.log(predvidanje)) + np.multiply((1 - oznaka), np.log(1 - predvidanje))
         return - np.sum(logprobs) / m
 
-    def mse(self, predvidanje: np.ndarray, oznaka: np.ndarray) -> np.ndarray:
-        return np.square(predvidanje - oznaka).mean()
-
     def ucenje(self, broj_iteracija_konvolucije: int,
                broj_epoha: int,
                naziv_spremljenog_modela: str) -> None:
@@ -189,7 +188,7 @@ class Konvolucijska_neuronska_mreza:
         Testira naučeni model, te vraća njegovu točnost.
         '''
         skup_za_testiranje: np.ndarray = self.podaci#[:int(len(self.podaci) * .75)]
-        self.tf_ss, self.tf_is, self.o_ss, self.o_is = np.load('350_25_3k2.npy', allow_pickle=True)
+        self.tf_ss, self.tf_is, self.o_ss, self.o_is = np.load(self.spremljeni_parametri, allow_pickle=True) # self.spremljeni_parametri
         brojac: int = 0
         tocno: int = 0
         rezultati: List[np.ndarray] = []
@@ -204,19 +203,3 @@ class Konvolucijska_neuronska_mreza:
             brojac += 1
         print('Točnost modela je: ' + str(round(tocno / brojac, 2) * 100) + '%')
         return rezultati
-
-
-    def test(self, skup_za_testiranje, spremljeni_parametri):
-        self.tf_ss, self.tf_is, self.o_ss, self.o_is = np.load(spremljeni_parametri,
-                                                                                           allow_pickle=True)
-        brojac: int = 0
-        tocno: int = 0
-        broj_parametara: int = len(skup_za_testiranje)
-        for parametri, oznaka in tqdm(skup_za_testiranje):
-            izravnati_niz: np.ndarray = self.konvolucijski_sloj(parametri, 2)
-            _, izlazni_sloj, _ = self.guranje_naprijed(izravnati_niz, oznaka, broj_parametara)
-            pozicija = np.where(oznaka == 1.)[0][0]
-            if izlazni_sloj[pozicija] > .5:
-                tocno += 1
-            brojac += 1
-        print('Točnost modela je: ' + str(round(tocno / brojac, 2) * 100) + '%')
