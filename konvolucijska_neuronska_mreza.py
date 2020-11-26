@@ -4,6 +4,7 @@ from typing import List, Tuple
 from util import relu, softmax
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+from PIL import Image
 
 
 class Konvolucijska_neuronska_mreza:
@@ -30,7 +31,10 @@ class Konvolucijska_neuronska_mreza:
 
     def udruzivanje_slike(self, mapa_znacajki: np.ndarray,
                           velicina: int = 2,
-                          pomak: int = 2) -> np.ndarray:  # Pooling 2x2
+                          pomak: int = 2) -> np.ndarray:
+        '''
+        Kreira mape značajki nad kojima se upotrijebilo traženje maksimalne značajke.
+        '''
         udruzena_slika = np.zeros((np.uint16((mapa_znacajki.shape[0] - velicina + 1) / pomak),
                                    np.uint16((mapa_znacajki.shape[1] - velicina + 1) / pomak),
                                    mapa_znacajki.shape[-1]))
@@ -39,6 +43,7 @@ class Konvolucijska_neuronska_mreza:
             for red in np.arange(0, mapa_znacajki.shape[0] - velicina - 1, pomak):
                 stupac_udruzene_slike = 0
                 for stupac in np.arange(0, mapa_znacajki.shape[1] - velicina - 1, pomak):
+                    # umanjuje mape značajki za 75%
                     udruzena_slika[
                         red_udruzene_slike, stupac_udruzene_slike, broj_mape] = self.provjeri_najvecu_vrijednost(
                         [mapa_znacajki[red:red + velicina, stupac:stupac + velicina, broj_mape]])
@@ -50,26 +55,37 @@ class Konvolucijska_neuronska_mreza:
         return np.sum(np.multiply(tri_x_tri, kernel))
 
     def trazenje_znacajki(self, slika: np.ndarray, filter: np.ndarray) -> np.ndarray:
+        '''
+        Primjenjuje kernel (filter) nad slikom.
+        Vraća mapu značajki.
+        '''
         znacajke: List[List[List[float]]] = []
         for i in range(1, slika.shape[0] - 1):
             red_znacajki: List[float] = []
             for j in range(1, slika.shape[1] - 1):
+                # prolazi kroz cijelu sliku i dohvaća 3 x 3 piksela sa slike
                 tri_x_tri: np.ndarray[float] = np.array([
                     [slika[i - 1][j - 1], slika[i - 1][j], slika[i - 1][j + 1]],
                     [slika[i][j - 1], slika[i][j], slika[i][j + 1]],
                     [slika[i + 1][j - 1], slika[i + 1][j], slika[i + 1][j + 1]]
                 ])
+                # nad svakom skupinom piksela primjeni filter
                 znacajka: float = self.primjeni_kernel(tri_x_tri, filter)
                 red_znacajki.append(znacajka)
             znacajke.append(red_znacajki)
         return self.pretvori_u_niz(znacajke)
 
     def konvolucija(self, slika: np.ndarray, konvolucijski_filteri: np.ndarray) -> np.ndarray:
+        '''
+        Odrađuje proces konvolucije i primjenjuje aktivacijsku funkciju nad slikom.
+        Kreira n broj filtera ovisno o broju konvolucijskih filtera koje dobiva kao argument.
+        '''
         mapa_znacajki = np.zeros((slika.shape[0] - konvolucijski_filteri.shape[1] + 1,
                                   slika.shape[1] - konvolucijski_filteri.shape[1] + 1,
                                   konvolucijski_filteri.shape[0]))
         for broj_filtera in range(konvolucijski_filteri.shape[0]):
             trenutni_filter = konvolucijski_filteri[broj_filtera, :]  # dohvačanje filtera
+            # primjene se filteri nad svakom sliku u podatkovnom skupu
             if len(slika.shape) > 2:
                 konvolucijska_mapa = self.trazenje_znacajki(slika[:, :, 0], trenutni_filter)
                 for broj_kanala in range(1, slika.shape[-1]):
@@ -78,6 +94,7 @@ class Konvolucijska_neuronska_mreza:
             else:
                 konvolucijska_mapa = self.trazenje_znacajki(slika, trenutni_filter)
             mapa_znacajki[:, :, broj_filtera] = konvolucijska_mapa
+        # primjena aktivacijske funkcije
         return relu(mapa_znacajki)
 
     def generiraj_tezinske_faktore(self, ulazni_sloj):
@@ -114,21 +131,35 @@ class Konvolucijska_neuronska_mreza:
 
     def konvolucijski_sloj(self, parametri: np.ndarray,
                            broj_iteracija: int) -> np.ndarray:
+        '''
+        Automatizira postupak konvolucije i traženja značajki nad više konvolucijskih slojeva.
+        '''
         mape_znacajki: np.ndarray = None
         for _ in range(broj_iteracija):
             mape_znacajki = self.konvolucija(parametri if mape_znacajki is None else umanjene_mape, konvolucijski_filteri)
             umanjene_mape: np.ndarray = self.udruzivanje_slike(mape_znacajki)
+            # for i in range(umanjene_mape.shape[-1]):
+            #     Image.fromarray(mape_znacajki[:,:,i]).show()
         izravnati_niz = umanjene_mape.reshape(-1, 1)
         return izravnati_niz / np.linalg.norm(izravnati_niz)
 
     def guranje_naprijed(self, podaci: np.ndarray,
                          oznaka: np.ndarray,
                          velicina_skupa: int) -> Tuple[np.ndarray, np.ndarray, float]:
+        '''
+        Generira težinske faktore i pristranost. Nad izravnatim slojem odrađuje guranje prema naprijed.
+        '''
         if self.tf_ss is None:
             self.generiraj_tezinske_faktore(podaci.shape[0])
         skriveni_sloj: np.ndarray = relu(np.dot(self.tf_ss, podaci) + self.o_ss)
         izlazni_sloj: np.ndarray = softmax(np.dot(self.tf_is, skriveni_sloj) + self.o_is)
         gubitak: float = self.krizna_entropija(izlazni_sloj, oznaka, velicina_skupa)
+        print()
+        print(f'Predviđena vrijednost: ')
+        print(izlazni_sloj)
+        print(f'Prava vrijednost: ')
+        print(oznaka)
+        print(f'Gubitak: {gubitak}')
         return skriveni_sloj, izlazni_sloj, gubitak
 
     def propagiranje_unazad(self, podaci: np.ndarray,
@@ -136,6 +167,9 @@ class Konvolucijska_neuronska_mreza:
                              izlazni_sloj: np.ndarray,
                              oznaka: np.ndarray,
                              broj_parametara: int) -> None:
+        '''
+        Odrađuje postupak gradijentnog spusta, te namješta težinske faktore i odstupanja.
+        '''
         derivat_izlaznog_sloja: np.ndarray = izlazni_sloj - oznaka
         derivat_tf_izlaznog_sloja: np.ndarray = (1 / broj_parametara) * np.dot(derivat_izlaznog_sloja, skriveni_sloj.T)
         derivat_odstupanja_izlaznog_sloja: np.ndarray = (1 / broj_parametara) * np.sum(derivat_izlaznog_sloja, axis=1, keepdims=True)
@@ -150,20 +184,26 @@ class Konvolucijska_neuronska_mreza:
         self.o_is = self.o_is - self.stopa_ucenja * derivat_odstupanja_izlaznog_sloja
 
 
-    def testiranje(self) -> None:
-        skup_za_testiranje: np.ndarray = self.podaci[int(len(self.podaci) * .75):]
+    def testiranje(self) -> List[np.ndarray]:
+        '''
+        Testira naučeni model, te vraća njegovu točnost.
+        '''
+        skup_za_testiranje: np.ndarray = self.podaci#[:int(len(self.podaci) * .75)]
         self.tf_ss, self.tf_is, self.o_ss, self.o_is = np.load('350_25_3k2.npy', allow_pickle=True)
         brojac: int = 0
         tocno: int = 0
+        rezultati: List[np.ndarray] = []
         broj_parametara: int = len(skup_za_testiranje)
         for parametri, oznaka in tqdm(skup_za_testiranje):
             izravnati_niz: np.ndarray = self.konvolucijski_sloj(parametri, 2)
             _, izlazni_sloj, _ = self.guranje_naprijed(izravnati_niz, oznaka, broj_parametara)
+            rezultati.append(izlazni_sloj)
             pozicija = np.where(oznaka == 1.)[0][0]
             if izlazni_sloj[pozicija] > .5:
                 tocno += 1
             brojac += 1
         print('Točnost modela je: ' + str(round(tocno / brojac, 2) * 100) + '%')
+        return rezultati
 
 
     def test(self, skup_za_testiranje, spremljeni_parametri):

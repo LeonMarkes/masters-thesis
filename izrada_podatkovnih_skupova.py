@@ -12,6 +12,9 @@ import cv2
 
 
 def oznaci_sliku(naziv_datoteke: str) -> Tuple[List[float], int]:
+    '''
+    Ovisno o broju različitih naziva slika, kreirat će odgovarajući broj oznaka.
+    '''
     jedinstvene_vrijednosti: List[str] = []
     for slika in os.listdir(naziv_datoteke):
         naziv_slike: str = slika.split('.')[0]
@@ -30,8 +33,13 @@ def oznaci_sliku(naziv_datoteke: str) -> Tuple[List[float], int]:
 
 def dohvati_i_uredi_slike(naziv_datoteke: str,
                           velicina_slike: Tuple[int] = (350, 350)) -> List[float]:
+    '''
+    Svim slikama iz datoteke promijeni dimenzije i pretvori ih u crno bijele slike.
+    '''
     slike: List[List[float]] = []
     putanja_do_datoteke = os.getcwd() + '\\' + naziv_datoteke
+    # dohvati sve slike iz datoteke, te im promjeni dimenzije i
+    # sve slike u boji pretvori u crno bijele slike
     for naziv_slike in os.listdir(naziv_datoteke):
         putanja = os.path.join(putanja_do_datoteke, naziv_slike)
         slika = cv2.resize(cv2.imread(putanja, cv2.IMREAD_GRAYSCALE), velicina_slike)
@@ -40,6 +48,10 @@ def dohvati_i_uredi_slike(naziv_datoteke: str,
 
 
 def kreiraj_podatkovni_skup(naziv_datoteke: str = 'podatkovni_skup') -> Tuple[List[np.ndarray], int]:
+    '''
+    Funkcija pomoću oznaci_sliku() i dohvati_i_uredi_sliku()
+    kreira uređeni podatkovni skup koji se prosljeđuje modelu.
+    '''
     podatkovni_skup: List[List[float]] = []
     oznake: Tuple[List[float], int] = oznaci_sliku(naziv_datoteke)
     slike = dohvati_i_uredi_slike(naziv_datoteke)
