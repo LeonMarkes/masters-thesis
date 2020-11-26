@@ -185,7 +185,7 @@ class Konvolucijska_neuronska_mreza:
         '''
         Testira naučeni model, te vraća njegovu točnost.
         '''
-        skup_za_testiranje: np.ndarray = self.podaci#[:int(len(self.podaci) * .75)]
+        skup_za_testiranje: np.ndarray = self.podaci[int(len(self.podaci) * .75):]
         self.tf_ss, self.tf_is, self.o_ss, self.o_is = np.load(self.spremljeni_parametri, allow_pickle=True) # self.spremljeni_parametri
         brojac: int = 0
         tocno: int = 0

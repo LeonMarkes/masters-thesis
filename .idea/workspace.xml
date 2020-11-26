@@ -3,12 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="9d8037fd-1574-4c32-859b-11d93fb91b08" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_extraction.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/konvolucija.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/konvolucijska_neuronska_mreza.py" beforeDir="false" afterPath="$PROJECT_DIR$/konvolucijska_neuronska_mreza.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run.py" beforeDir="false" afterPath="$PROJECT_DIR$/run.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tf_i_o4.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/udruzivanje_slika.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -277,7 +273,7 @@
       <workItem from="1606152311745" duration="3670000" />
       <workItem from="1606234122510" duration="4098000" />
       <workItem from="1606316887805" duration="13943000" />
-      <workItem from="1606400410078" duration="320000" />
+      <workItem from="1606400410078" duration="1138000" />
     </task>
     <task id="LOCAL-00001" summary="Finished dataset maker">
       <created>1591296034395</created>
@@ -335,7 +331,14 @@
       <option name="project" value="LOCAL" />
       <updated>1594491681846</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Removed obsolete code">
+      <created>1606400778088</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1606400778088</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -347,17 +350,18 @@
     <MESSAGE value="Finished feed forward" />
     <MESSAGE value="Adding gradient descent" />
     <MESSAGE value="Changed image size" />
-    <option name="LAST_COMMIT_MESSAGE" value="Changed image size" />
+    <MESSAGE value="Removed obsolete code" />
+    <option name="LAST_COMMIT_MESSAGE" value="Removed obsolete code" />
   </component>
   <component name="WindowStateProjectService">
     <state x="2610" y="267" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1606400705712">
       <screen x="1920" y="0" width="1920" height="1040" />
     </state>
     <state x="2610" y="267" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1536.824/1920.0.1920.1040@1920.0.1920.1040" timestamp="1606400705712" />
-    <state x="2505" y="114" key="CommitChangelistDialog2" timestamp="1606400731616">
+    <state x="2505" y="114" key="CommitChangelistDialog2" timestamp="1606400777229">
       <screen x="1920" y="0" width="1920" height="1040" />
     </state>
-    <state x="2505" y="114" key="CommitChangelistDialog2/0.0.1536.824/1920.0.1920.1040@1920.0.1920.1040" timestamp="1606400731616" />
+    <state x="2505" y="114" key="CommitChangelistDialog2/0.0.1536.824/1920.0.1920.1040@1920.0.1920.1040" timestamp="1606400777229" />
     <state width="1493" height="261" key="GridCell.Tab.0.bottom" timestamp="1598043449606">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
