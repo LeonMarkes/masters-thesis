@@ -16,11 +16,17 @@ def derivat_sigmoidne_funkcije(x: float) -> float:
 
 
 def relu(x: float) -> float:
-    return max(0, x)
+    return x * (x > 0)
+
+
+def softmax(x) -> np.ndarray:
+    e_x: np.ndarray = np.exp(x - np.max(x))
+    return e_x / e_x.sum()
 
 
 def swish_relu(x: float) -> float:
     return x * sigmoidna_funkcija(x)
+
 
 
 def normalizacija_skaliranih_znacajki(dataset: List[List[float]]) -> None:
