@@ -5,6 +5,7 @@ Kod koji se primjenjivao u praktičnom dijelu rada se nalazi unutar skripti:
 - izrada_podatkovnih_skupova.py
 - run.py
 - util.py
+- kerneli.py
 
 Rad mreže se pokreće s run.py skriptom.
 Prvo se poziva kreiraj_podatkovni_skup('obrana') koja kao argument prima folder sa slikama mačaka i pasa.
@@ -26,6 +27,7 @@ Metoda testiranje zaprima naziv naučenog modela te nakon što klasificira podat
 Rad modela traje neko vrijeme (za 75 slika je potrebno otprilike 10 minuta rada).
 
 U util.py se nalaze aktivacijske funkcije.
+u kerneli.py se nalaze filteri.
 
 izrada_podatkovnih_skupova.py radi pred procesiranje podataka. Promjeni veličinu slika u 350x350 piksela te kreira oznake za svaku sliku.
 Da bi predobrada dobro radila, svaka slika mora ima naziv: ime_životinje.neki_redni_broj
