@@ -1,0 +1,6 @@
+path_to_data: ../test
+skriveni_sloj: 25
+stopa_ucenja: 0.001
+naziv_modela: 350_25_3k2.npy
+broj_iteracija_konvolucije: 3
+broj_epoha: 3
