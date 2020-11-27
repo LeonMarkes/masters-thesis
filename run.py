@@ -1,11 +1,15 @@
 from izrada_podatkovnih_skupova import kreiraj_podatkovni_skup
 from konvolucijska_neuronska_mreza import Konvolucijska_neuronska_mreza
+import yaml
 
 
 def main():
-    podaci, oznaka = kreiraj_podatkovni_skup('obrana')
-    konv_mreza = Konvolucijska_neuronska_mreza(podaci, skriveni_sloj=25, izlazni_sloj=oznaka, stopa_ucenja=.001, spremljeni_parametri='350_25_3k2u.npy')
-    konv_mreza.ucenje(3, 3) # ako želite samo testirati model postojeći model, komentirajte ovu liniju koda
+    # edit configuration in config.yml file
+    with open('config.yml', 'r') as file:
+        config = yaml.load(file, Loader=yaml.FullLoader)
+    podaci, oznaka = kreiraj_podatkovni_skup(config['path_to_data'])
+    konv_mreza = Konvolucijska_neuronska_mreza(podaci, skriveni_sloj=config['skriveni_sloj'], izlazni_sloj=oznaka, stopa_ucenja=config['stopa_ucenja'], spremljeni_parametri=config['naziv_modela'])
+    konv_mreza.ucenje(config['broj_iteracija_konvolucije'], config['broj_epoha']) # ako želite samo testirati model postojeći model, komentirajte ovu liniju koda
     konv_mreza.testiranje()
 
 
