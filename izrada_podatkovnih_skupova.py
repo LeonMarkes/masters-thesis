@@ -5,7 +5,6 @@ crno bijele slike istih dimenzija
 kreiraj drugi skup s oznakama zivotinja
 '''
 from typing import List, Tuple
-from multiprocessing import Process
 import numpy as np
 import os
 import cv2
