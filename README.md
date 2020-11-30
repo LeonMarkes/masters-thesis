@@ -47,7 +47,7 @@ izrada_podatkovnih_skupova.py radi pred procesiranje podataka. Promjeni veličin
 Da bi predobrada dobro radila, svaka slika mora ima naziv: ime_životinje.neki_redni_broj
 
 Config.yml sadrži svu konfiguraciju potrebnu za rad modela:
-- path_to_data -> putanja do datoteke gdje se nalaze slike
+- path_to_data -> putanja do datoteke gdje se nalaze slike, relativna na root datoteku
 - skriveni_sloj -> broj neurona u skrivenom sloju (integer)
 - stopa_ucenja -> stopa učenja (float)
 - naziv_modela -> naziv modela s ekstenzijom .npy (string)
@@ -57,4 +57,4 @@ Config.yml sadrži svu konfiguraciju potrebnu za rad modela:
 konvolucijska_neuronska_mreza.py sadrži sav kod koji se koristi pri klasifikaciji i obradi podataka.
 hijerarhija koda je sljedeća:
 
-![Alt text](graf.png?raw=true "Title")
+![Alt text](graf.png?raw=true "Struktura koda")

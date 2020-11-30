@@ -36,11 +36,10 @@ def dohvati_i_uredi_slike(naziv_datoteke: str,
     Svim slikama iz datoteke promijeni dimenzije i pretvori ih u crno bijele slike.
     '''
     slike: List[List[float]] = []
-    putanja_do_datoteke = os.getcwd() + '\\' + naziv_datoteke
     # dohvati sve slike iz datoteke, te im promjeni dimenzije i
     # sve slike u boji pretvori u crno bijele slike
     for naziv_slike in os.listdir(naziv_datoteke):
-        putanja = os.path.join(putanja_do_datoteke, naziv_slike)
+        putanja = os.path.join(naziv_datoteke, naziv_slike)
         slika = cv2.resize(cv2.imread(putanja, cv2.IMREAD_GRAYSCALE), velicina_slike)
         slike.append(slika)
     return slike
